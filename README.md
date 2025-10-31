@@ -22,6 +22,7 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Windows.Gaming.Input;
 using Windows.Perception.Spatial;
+using Windows.UI.Xaml.Controls;
 using static SDL2.SDL;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -734,32 +735,71 @@ class EntityControlService {
     // et une classe mapper par type de controller.
 }
 
-interface ITexture { }
-class Texture : ITexture {
-    public IntPtr Handle { get; private set; }
-    public SDL.SDL_Rect TextureRect { get; set; }
-    public int Width => TextureRect.w;
-    public int Height => TextureRect.h;
-
-    public Texture(IntPtr handle, SDL.SDL_Rect rect) => (Handle, TextureRect) = (handle, rect);
+interface ITexture {
+    IntPtr TexturePtr { get; }
+    SDL_Rect TextureRect { get; }
+    int Width { get; }
+    int Height { get; }
+    int X { get; set; }
+    int Y { get; set; }
 }
+
+class Texture : ITexture {
+    private SDL_Rect _rect;
+    public IntPtr TexturePtr { get; private set; }
+
+    public SDL.SDL_Rect TextureRect {
+        get => _rect;
+        set => _rect = value;
+    }
+
+    public int Width => _rect.w;
+    public int Height => _rect.h;
+
+    public int X {
+        get => _rect.x;
+        set => _rect.x = value;
+    }
+    public int Y {
+        get => _rect.y;
+        set => _rect.y = value;
+    }
+
+    public Texture(IntPtr texturePtr, SDL.SDL_Rect rect) => (TexturePtr, TextureRect) = (texturePtr, rect);
+}
+
 
 interface IHitbox {
 
     int Width { get; }
     int Height { get; }
-    int X { get; }
-    int Y { get; }
+    int X { get; set; }
+    int Y { get; set; }
 }
+
 class Hitbox : IHitbox {
-    public SDL_Rect Box { get; set; }
+    private SDL_Rect _box;
 
-    public int Width => Box.w;
-    public int Height => Box.h;
-    public int X => Box.x;
-    public int Y => Box.y;
+    public int Width => _box.w;
+    public int Height => _box.h;
 
-    public Hitbox(int x, int y, int w, int h) => Box = new SDL_Rect { x = x, y = y, w = w, h = h };
+    public int X {
+        get => _box.x;
+        set => _box.x = value;
+    }
+
+    public int Y {
+        get => _box.y;
+        set => _box.y = value;
+    }
+
+    public Hitbox(int x, int y, int w, int h) => _box = new SDL_Rect { x = x, y = y, w = w, h = h };
+    public Hitbox(int w, int h) => _box = new SDL_Rect { x = 0, y = 0, w = w, h = h };
+
+    public SDL_Rect Box {
+        get => _box;
+        set => _box = value;
+    }
 }
 
 class TextureService {
@@ -770,15 +810,30 @@ class TextureService {
 
     public void Register(Entity entity, ITexture texture) {
         _textureById[entity.Id] = texture; OnTextureUpdated?.Invoke(entity, texture);
-    } // A REVOIR, LOADER AVEC PATH
+    }
 
     public bool HasTexture(Entity entity) => _textureById.TryGetValue(entity.Id, out var value);
     public ITexture GetTexture(Entity entity) { _textureById.TryGetValue(entity.Id, out var value); return value; }
 
     public void ApplyTexture(Entity entity, ITexture texture) => Register(entity, texture);
-    
-    public void RemoveTexture(Entity entity) {
-        if (_textureById.TryGetValue(entity.Id, out var texture)) _textureById[entity.Id] = null;
+
+    public void RemoveTexture(Entity entity) => _textureById.Remove(entity.Id);
+}
+
+class TextureLoader {
+    private readonly IntPtr _renderer;
+
+    public TextureLoader(IntPtr renderer) => _renderer = renderer;
+
+    public ITexture LoadFromFile(string path, Int32 w, Int32 h, Int32 x = 0, Int32 y = 0) {
+        IntPtr surfacePtr = SDL_image.IMG_Load(path);
+        if (surfacePtr == IntPtr.Zero) throw new Exception("Error loading the image: " + SDL_image.IMG_GetError());
+
+        IntPtr texture = SDL.SDL_CreateTextureFromSurface(_renderer, surfacePtr);
+        SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
+        SDL.SDL_FreeSurface(surfacePtr);
+
+        return new Texture(texture, new SDL.SDL_Rect { x = x, y = y, w = w, h = h });
     }
 }
 
@@ -795,25 +850,67 @@ class HitboxService {
     public IHitbox GetHitbox(Entity entity) { _hitboxById.TryGetValue(entity.Id, out var value); return value; }
 
     public void SetHitbox(Entity entity, IHitbox hitbox) => Register(entity, hitbox);
+    //public void SetHitboxPosition(Entity entity, Int32 x, Int32 y) {
+    //    GetHitbox(entity).
+    //}
+    // TROUVER UNE SOLUTIONS POUR BOUGER, FAUDRAIT LE METTRE ICI MAIS PAS SOLID....
 
-    public void DeleteHitbox(Entity entity) {
+    public void RemoveHitbox(Entity entity) {
         if (_hitboxById.TryGetValue(entity.Id, out var hitbox)) _hitboxById[entity.Id] = null;
     }
 }
 
-class SpriteManager {
+class Sprite {
+    public ITexture Texture { get; }
+    public IHitbox Hitbox { get; }
+
+    public Sprite(ITexture texture, IHitbox hitbox) => (Texture, Hitbox) = (texture, hitbox);
+}
+
+class EntityVisualManager { // NOM À REVOIR
+    public event Action<Entity, Sprite> OnVisualRegistered;
+
     private readonly PositionService _positionService;
     private readonly TextureService _textureService;
     private readonly HitboxService _hitBoxService;
-    
+    private readonly TextureLoader _textureLoader;
 
-    /* PAS CERTAIN FINALEMENT */
+    public EntityVisualManager(TextureService textureService, HitboxService hitboxService, PositionService positionService, TextureLoader textureLoader) {
+        (_textureService, _hitBoxService, _positionService, _textureLoader) = (textureService, hitboxService, positionService, textureLoader);
+        _positionService.OnMoved += UpdateVisualPosition;
+    }
+       
+    public void Register(Entity entity, ITexture texture, IHitbox hitbox) {
+        _textureService.Register(entity, texture);
+        _hitBoxService.Register(entity, hitbox);
+        OnVisualRegistered?.Invoke(entity, new Sprite(texture, hitbox));
+    }
 
-    //getTexture
-    //
+    public void Register(Entity entity, string path, int w, int h, int x = 0, int y = 0) =>
+        Register(entity, _textureLoader.LoadFromFile(path, w, h, x, y), new Hitbox(x, y, w, h));
 
-    
-    
+    public bool HasSprite(Entity entity) => _textureService.HasTexture(entity) && _hitBoxService.HasHitbox(entity);
+    public bool HasTexture(Entity entity) => _textureService.HasTexture(entity);
+    public bool HasHitbox(Entity entity) => _hitBoxService.HasHitbox(entity);
+
+    public Sprite GetSprite(Entity entity) => new Sprite(_textureService.GetTexture(entity), _hitBoxService.GetHitbox(entity));
+
+    private void UpdateVisualPosition(Entity entity, double x, double y) { // 9-1-1 illegal
+        var tex = _textureService.GetTexture(entity);
+        var hb = _hitBoxService.GetHitbox(entity);
+
+        if (tex != null) {
+            tex.X = (int)x + 10;
+            tex.Y = (int)y + 10;
+        }
+
+        if (hb != null) {
+            hb.X = (int)x;
+            hb.Y = (int)y;
+        }
+
+        Console.WriteLine($"{tex.X} {tex.Y} | {hb.X} {hb.Y}");
+    }
 }
 
 class RenderSystem {
@@ -859,9 +956,16 @@ class RenderSystem {
         var (r, g, b, a) = color.ToRGBA(); SetTextureColorMod(texture, r, g, b);
     }
 
+    // ces methodes en bas sont sus et ne devraisnet pas etres la
     public void SetTextureAlphaMod(IntPtr texture, byte a) => SDL.SDL_SetTextureAlphaMod(texture, a);
 
     public void SetTextureBlendMode(IntPtr texture, SDL_BlendMode mode) => SDL.SDL_SetTextureBlendMode(texture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
+
+    public void InitializeImageFlags(SDL_image.IMG_InitFlags flags) {
+        int result = SDL_image.IMG_Init(flags);
+        if ((result & (int)flags) != (int)flags)
+            throw new Exception("SDL_image could not initialize: " + SDL_image.IMG_GetError());
+    }
 }
 
 class RenderService {
@@ -873,18 +977,6 @@ class RenderService {
     //il faut aussi réfléchit au fait qu'il y aura des spritesheet plus tard donc type générique ou abstrait?????
 
     public void ReadInput(Entity entity) { } // ou a quelque pars dautre genre input manager ou whatever, c pas render
-}
-
-class Sprite { // À DELETER
-    public IntPtr Texture { get; private set; }
-    public SDL_Rect SourceRect { get; set; }
-    public SDL_Rect DestRect { get; set; }
-
-    public Sprite(IntPtr texture, SDL_Rect source, SDL_Rect dest) {
-        Texture = texture;
-        SourceRect = source;
-        DestRect = dest;
-    }
 }
 
 class Program {
@@ -1079,25 +1171,17 @@ class Program {
         IntPtr window = SDL_CreateWindow("Quark Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                          1600, 900, SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
         IntPtr renderer = SDL_CreateRenderer(window, -1, SDL_RendererFlags.SDL_RENDERER_ACCELERATED | SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
-
+        
         var renderSystem = new RenderSystem(renderer);
+        var textureLoader = new TextureLoader(renderer);
+        var entityVisualManager = new EntityVisualManager(textureService, hitboxService, positionService, textureLoader);
 
-        IntPtr surfacePtr = SDL_image.IMG_Load("assets/sprites/player.png");
-        if (surfacePtr == IntPtr.Zero) {
-            Console.WriteLine("Error loading the image: " + SDL_image.IMG_GetError());
-            return;
-        }
+        entityVisualManager.OnVisualRegistered += (entity, sprite) => {
+            Console.WriteLine($"Sprite registered: {entity.Id}, Texture ptr: {sprite.Texture.TexturePtr}");
+        };
 
-        IntPtr playerTexture = SDL.SDL_CreateTextureFromSurface(renderer, surfacePtr);
-        SDL.SDL_SetTextureBlendMode(playerTexture, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
-        SDL.SDL_FreeSurface(surfacePtr);
-
-        var spriteRect = new SDL.SDL_Rect { w = 64, h = 64 };
-        var playerTex = new Texture(playerTexture, spriteRect);
-        textureService.Register(player2, playerTex);
-
-        var playerHitbox = new Hitbox(0, 0, 64, 64);
-        hitboxService.Register(player2, playerHitbox);
+        entityVisualManager.Register(player2, "assets/sprites/player.png", 64, 64,
+            (int)positionService.GetX(player2), (int)positionService.GetY(player2));
 
         bool quit = false;
         bool menu = false;
@@ -1117,21 +1201,23 @@ class Program {
             renderSystem.RenderClear();
 
             foreach (var entity in new[] { player2 }) {
-                if (textureService.HasTexture(entity) && positionService.HasPosition(entity)) {
-                    var tex = (Texture)textureService.GetTexture(entity);
-                    double x = positionService.GetX(entity);
-                    double y = positionService.GetY(entity);
+                if (entityVisualManager.HasSprite(entity)) {
+                    var sprite = entityVisualManager.GetSprite(entity);
+                    var tex = sprite.Texture;
+                    var hitbox = sprite.Hitbox;
 
-                    SDL.SDL_Rect dstRect = new SDL.SDL_Rect { x = (int)x, y = (int)y, w = tex.Width, h = tex.Height };
-                    renderSystem.RenderCopy(tex.Handle, IntPtr.Zero, dstRect);
-                }
+                    //mettre ces trucs la dans render et faire .render(entity ou whatever);
+                    SDL.SDL_Rect dstRect = new SDL.SDL_Rect { x = tex.X, y = tex.Y, w = tex.Width, h = tex.Height };
+                    renderSystem.RenderCopy(tex.TexturePtr, IntPtr.Zero, dstRect);
 
-                if (hitboxService.HasHitbox(entity)) { // la hitbox ne suit pas le joueur, figure out plus tard...
-                    var hb = hitboxService.GetHitbox(entity);
-                    SDL.SDL_Rect hbRect = new SDL.SDL_Rect { x = hb.X, y = hb.Y, w = hb.Width, h = hb.Height };
-                    renderSystem.DrawRectangle(ref hbRect, Color.Red);
+                    if (hitbox != null) {
+                        SDL.SDL_Rect hbRect = new SDL.SDL_Rect { x = hitbox.X, y = hitbox.Y, w = hitbox.Width, h = hitbox.Height };
+                        renderSystem.DrawRectangle(ref hbRect, Color.Red);
+                    }
                 }
             }
+
+
 
             int screenWidth, screenHeight;
             SDL_GetWindowSize(window, out screenWidth, out screenHeight);
@@ -1160,11 +1246,14 @@ class Program {
             // je pense que d'utiliser une nouvelel disposition genre
             // swap pour une disposition d'actions de menu serait mieux
 
+            // pour stopper le jeu, j'aurai probablement une classe qui contient les services
+            // j'aurai juste a stopper l'update de mes services et a garder l'input service ig
+
 
             renderSystem.RenderPresent();
         }
 
-        SDL.SDL_DestroyTexture(playerTexture);
+        SDL.SDL_DestroyTexture(textureService.GetTexture(player2).TexturePtr); // 100% temporaire
         SDL.SDL_DestroyRenderer(renderer);
         SDL.SDL_DestroyWindow(window);
         SDL.SDL_Quit();
