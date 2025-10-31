@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ConsoleTableExt" Version="3.3.0" />
+    <PackageReference Include="directxtk_desktop_win10" Version="2025.7.10.1" />
+    <PackageReference Include="Uno.UI" Version="5.6.99" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Downloads\csharp-sdl-imgui-master\csharp-sdl-imgui-master\General\General.csproj" />
+  </ItemGroup>
+
+</Project>
