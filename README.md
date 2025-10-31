@@ -1,4 +1,4 @@
-# Quarkf
+# Quark
 Event-driven C# engine for managing game entities, positions, health, and interactions.  
 The project development commenced on Sunday, October 26, 2025.
 
@@ -1174,7 +1174,8 @@ class Program {
 ```
 
 ## Latest Progress
-<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/a1a87a36-e959-4d6e-a198-754691aa44a1" />
+<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b" />
+Rendering a sprite offset from its hitbox by 10 units. Modularity++
 
 ## Output
 ```console
