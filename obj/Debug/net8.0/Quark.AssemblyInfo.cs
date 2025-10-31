@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Quark")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f934ac8075ca079e5e69c689d46a551454df1829")]
 [assembly: System.Reflection.AssemblyProductAttribute("Quark")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Quark")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

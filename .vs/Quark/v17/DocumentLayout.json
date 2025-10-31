@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\F\u00E9lix-Olivier Dumas\\Documents\\Programmation\\DDD\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{65B95899-7F34-4ECF-848C-132D63A0E773}|DDD.csproj|c:\\users\\f\u00E9lix-olivier dumas\\documents\\programmation\\ddd\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{65B95899-7F34-4ECF-848C-132D63A0E773}|DDD.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{65B95899-7F34-4ECF-848C-132D63A0E773}|Quark.csproj|c:\\users\\f\u00E9lix-olivier dumas\\documents\\programmation\\ddd\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{65B95899-7F34-4ECF-848C-132D63A0E773}|Quark.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{65B95899-7F34-4ECF-848C-132D63A0E773}|Quark.csproj|c:\\users\\f\u00E9lix-olivier dumas\\documents\\programmation\\ddd\\quark.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -33,20 +33,23 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 7,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DDD.csproj",
+              "Title": "Quark.csproj",
               "DocumentMoniker": "C:\\Users\\F\u00E9lix-Olivier Dumas\\Documents\\Programmation\\DDD\\Quark.csproj",
               "RelativeDocumentMoniker": "Quark.csproj",
               "ToolTip": "C:\\Users\\F\u00E9lix-Olivier Dumas\\Documents\\Programmation\\DDD\\Quark.csproj",
               "RelativeToolTip": "Quark.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-30T01:39:37.39Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T01:39:37.39Z"
             },
             {
               "$type": "Document",
@@ -58,8 +61,7 @@
               "RelativeToolTip": "..\\..\\..\\Downloads\\csharp-sdl-imgui-master\\csharp-sdl-imgui-master\\Example\\Example.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-30T01:36:56.114Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T01:36:56.114Z"
             },
             {
               "$type": "Document",
@@ -71,8 +73,7 @@
               "RelativeToolTip": "..\\..\\..\\Downloads\\csharp-sdl-imgui-master\\csharp-sdl-imgui-master\\General\\General.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-30T01:36:54.768Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T01:36:54.768Z"
             },
             {
               "$type": "Document",
@@ -84,8 +85,7 @@
               "RelativeToolTip": "..\\..\\..\\Downloads\\csharp-sdl-imgui-master\\csharp-sdl-imgui-master\\Example\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-30T01:33:12.653Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T01:33:12.653Z"
             },
             {
               "$type": "Document",
@@ -97,8 +97,7 @@
               "RelativeToolTip": "..\\GraphicsExperiment\\GraphicsExperiment.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-30T01:04:29.243Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T01:04:29.243Z"
             },
             {
               "$type": "Document",
@@ -110,8 +109,7 @@
               "RelativeToolTip": "..\\GraphicsExperiment\\Program.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-30T00:59:43.846Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-30T00:59:43.846Z"
             },
             {
               "$type": "Document",
@@ -121,14 +119,10 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\F\u00E9lix-Olivier Dumas\\Documents\\Programmation\\DDD\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAADUEAAAAAAAAAAAUwDgEAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAADUEAAAAAAAAAAAUwE0EAABCAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-26T14:35:04.237Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }
