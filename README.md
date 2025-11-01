@@ -74,6 +74,12 @@ Some of the information above is slightly incorrect because I ultimately reworke
 
 ---
 
+## Latest Progress
+<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/7dadb0b1-5fcf-4b6b-8b20-16ce79a840cc" />
+Rendering of multiple entities, each with its own texture and functional hitbox. Each entity has its own dedicated controller, its own set of actions it is authorized to perform, its own updates, and its own modules. This could allow me, in the future, to, for example, give a controller to an AI and let it press the buttons it wants without actually interacting with the entity. Also, we could create a character swap system where I simply reassign the controller to another entity, for instance.
+
+---
+
 ## Full Code
 
 ```csharp
@@ -1331,10 +1337,6 @@ class Program {
     }
 }
 ```
-
-## Latest Progress
-<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/7dadb0b1-5fcf-4b6b-8b20-16ce79a840cc" />
-Rendering of multiple entities, each with its own texture and functional hitbox. Each entity has its own dedicated controller, its own set of actions it is authorized to perform, its own updates, and its own modules. This could allow me, in the future, to, for example, give a controller to an AI and let it press the buttons it wants without actually interacting with the entity. Also, we could create a character swap system where I simply reassign the controller to another entity, for instance.
 
 ## Output
 ```console
