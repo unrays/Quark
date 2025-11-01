@@ -1370,6 +1370,10 @@ Rendering of multiple entities, each with its own texture and functional hitbox.
 ├─────────┼─────────┼────────────┤
 │ Echo    │ Invalid │ (NaN, NaN) │
 └─────────┴─────────┴────────────┘
+[Sprite Registered] Bravo      | Texture ptr: 1752388786344 | Hitbox: 64x64
+[Sprite Registered] Alpha      | Texture ptr: 1752388777552 | Hitbox: 64x64
+[Sprite Registered] Charlie    | Texture ptr: 1752388768584 | Hitbox: 64x64
+[Sprite Registered] Delta      | Texture ptr: 1752388784912 | Hitbox: 64x64
 ```
 
 ## Entity Input Handling with Collision Support
