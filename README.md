@@ -1333,8 +1333,8 @@ class Program {
 ```
 
 ## Latest Progress
-<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b" />
-Rendering a sprite offset from its hitbox by 10 units. Modularity++
+<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/7dadb0b1-5fcf-4b6b-8b20-16ce79a840cc" />
+Rendering of multiple entities, each with its own texture and functional hitbox. Each entity has its own dedicated controller, its own set of actions it is authorized to perform, its own updates, and its own modules.
 
 ## Output
 ```console
