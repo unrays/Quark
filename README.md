@@ -595,13 +595,15 @@ class HealthService {
 class CollisionManager {
     public event Action<Entity, Entity> OnCollision;
     private readonly PositionService _positionService;
+    private readonly HitboxService _hitboxService;
     private readonly EntityStore _entityStore;
 
-    private const double EPSILON = 0.001;
+    private const double EPSILON = 2.5;
 
-    public CollisionManager(EntityStore entityStore, PositionService positionService) {
-        (_entityStore, _positionService) = (entityStore, positionService);
-        positionService.OnMoved += CheckCollisions;
+    public CollisionManager(EntityStore entityStore, PositionService positionService, HitboxService hitboxService) {
+        (_entityStore, _positionService, _hitboxService) = (entityStore, positionService, hitboxService);
+        //positionService.OnMoved += CheckCollisions;
+        positionService.OnMoved += HitboxCollisionCheck;
     } 
 
     public void CheckCollisions(Entity entity, double x, double y) {
@@ -616,6 +618,26 @@ class CollisionManager {
 
             if (Math.Abs(posA.X - posB.X) < EPSILON && (Math.Abs(posA.Y - posB.Y) < EPSILON))
                 ResolveCollisions(entity, storedEntity);
+        }
+    }
+
+    public void HitboxCollisionCheck(Entity entity, double x, double y) {
+        foreach (var storedEntity in _entityStore.Store) {
+            if (entity == storedEntity
+                || !_positionService.HasPosition(storedEntity)
+                || !_positionService.HasPosition(entity)
+                || !_hitboxService.HasHitbox(storedEntity)
+                || !_hitboxService.HasHitbox(entity))
+                continue;
+
+            var hbA = _hitboxService.GetHitbox(entity);
+            var hbB = _hitboxService.GetHitbox(storedEntity);
+
+            if (hbA.X < hbB.X + hbB.Width + EPSILON
+             && hbA.X + hbA.Width > hbB.X - EPSILON
+             && hbA.Y < hbB.Y + hbB.Height + EPSILON
+             && hbA.Y + hbA.Height > hbB.Y - EPSILON)
+             ResolveCollisions(entity, storedEntity);
         }
     }
 
@@ -645,7 +667,7 @@ abstract class InputDevice {
 
 class Controller : InputDevice {
     public Controller(string name = "unknown_controller") : base(name) { }
-    public override void ReadInput(SDL_Event e) {
+    public override void ReadInput(SDL_Event e) { // le controller et le keyboard sont presque identiques...
         if (e.type == SDL_EventType.SDL_KEYDOWN || e.type == SDL_EventType.SDL_KEYUP) { }
         SDL_GameControllerButton button = (SDL_GameControllerButton)e.cbutton.button;
         InputKey mapped = InputKeyAdapterSDL.FromControllerButton(button);
@@ -943,7 +965,7 @@ class Sprite {
     public Sprite(ITexture texture, IHitbox hitbox) => (Texture, Hitbox) = (texture, hitbox);
 }
 
-class EntityVisualManager { // NOM À REVOIR
+class EntitySpriteManager {
     public event Action<Entity, Sprite> OnVisualRegistered;
 
     private readonly PositionService _positionService;
@@ -951,33 +973,37 @@ class EntityVisualManager { // NOM À REVOIR
     private readonly HitboxService _hitBoxService;
     private readonly TextureLoader _textureLoader;
 
-    public EntityVisualManager(TextureService textureService, HitboxService hitboxService, PositionService positionService, TextureLoader textureLoader) {
+    public EntitySpriteManager(TextureService textureService, HitboxService hitboxService, PositionService positionService, TextureLoader textureLoader) {
         (_textureService, _hitBoxService, _positionService, _textureLoader) = (textureService, hitboxService, positionService, textureLoader);
         _positionService.OnMoved += UpdateVisualPosition;
     }
-       
+
     public void Register(Entity entity, ITexture texture, IHitbox hitbox) {
         _textureService.Register(entity, texture);
         _hitBoxService.Register(entity, hitbox);
         OnVisualRegistered?.Invoke(entity, new Sprite(texture, hitbox));
     }
 
-    public void Register(Entity entity, string path, int w, int h, int x = 0, int y = 0) =>
-        Register(entity, _textureLoader.LoadFromFile(path, w, h, x, y), new Hitbox(x, y, w, h));
+    public void Register(Entity entity, string path, int w, int h, int? x = null, int? y = null) {
+        var pos = (x: (x ?? (_positionService.HasPosition(entity) ? (int)_positionService.GetX(entity) : 0)),
+                   y: (y ?? (_positionService.HasPosition(entity) ? (int)_positionService.GetY(entity) : 0)));
+        Register(entity, _textureLoader.LoadFromFile(path, w, h, pos.x, pos.y), new Hitbox(pos.x, pos.y, w, h));
+    }
 
     public bool HasSprite(Entity entity) => _textureService.HasTexture(entity) && _hitBoxService.HasHitbox(entity);
     public bool HasTexture(Entity entity) => _textureService.HasTexture(entity);
     public bool HasHitbox(Entity entity) => _hitBoxService.HasHitbox(entity);
 
-    public Sprite GetSprite(Entity entity) => new Sprite(_textureService.GetTexture(entity), _hitBoxService.GetHitbox(entity));
+    public Sprite GetSprite(Entity entity) =>
+        new Sprite(_textureService.GetTexture(entity), _hitBoxService.GetHitbox(entity));
 
     private void UpdateVisualPosition(Entity entity, double x, double y) { // 9-1-1 illegal
         var tex = _textureService.GetTexture(entity);
-        var hb = _hitBoxService.GetHitbox(entity);
+        var hb = _hitBoxService.GetHitbox(entity); //deplacer dans le truc inputmanager
 
         if (tex != null) {
-            tex.X = (int)x + 10;
-            tex.Y = (int)y + 10;
+            tex.X = (int)x;
+            tex.Y = (int)y;
         }
 
         if (hb != null) {
@@ -1074,12 +1100,12 @@ class Program {
 
         var globalStore = new EntityStore();
 
-        var healthService = new HealthService();
-        var positionService = new PositionService();
-        var collisionManager = new CollisionManager(globalStore, positionService);
-
         var textureService = new TextureService();
         var hitboxService = new HitboxService();
+
+        var healthService = new HealthService();
+        var positionService = new PositionService();
+        var collisionManager = new CollisionManager(globalStore, positionService, hitboxService);
 
         var inputService = new InputService(globalStore);
 
@@ -1168,6 +1194,7 @@ class Program {
         //keyboard1.ReadInput();
 
         actionService.Register(player2, playerActions);
+        actionService.Register(player3, playerActions);
 
         //Console.WriteLine(actionService.CanPerform(player1, Actions.OpenMenu));
 
@@ -1190,6 +1217,7 @@ class Program {
         positionService.Register(player1, Vector2.Create(0, 0));
         positionService.Register(player2, Vector2.Create(0, 0));
         positionService.Register(player3, Vector2.Create(0, 0));
+        positionService.Register(player4, Vector2.Create(0, 0));
 
         healthService.Damage(player1, 75);
         healthService.Heal(player1, 25);
@@ -1203,6 +1231,7 @@ class Program {
         positionService.Move(player1, 100, 00);
         positionService.Move(player2, 50, 250);
         positionService.Move(player3, 500, 150);
+        positionService.Move(player4, 500, 500);
 
         positionService.Teleport(player1, 10, 10);
 
@@ -1250,14 +1279,30 @@ class Program {
         
         var renderSystem = new RenderSystem(renderer);
         var textureLoader = new TextureLoader(renderer);
-        var entityVisualManager = new EntityVisualManager(textureService, hitboxService, positionService, textureLoader);
+        var entitySpriteManager = new EntitySpriteManager(textureService, hitboxService, positionService, textureLoader);
 
-        entityVisualManager.OnVisualRegistered += (entity, sprite) => {
-            Console.WriteLine($"Sprite registered: {entity.Id}, Texture ptr: {sprite.Texture.TexturePtr}");
+        entitySpriteManager.OnVisualRegistered += (entity, sprite) => {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+
+            Console.WriteLine(
+                "[Sprite Registered] {0,-10} | {1,-18} | {2,-10}",
+                entity.Name,
+                $"Texture ptr: {sprite.Texture.TexturePtr}",
+                $"Hitbox: {sprite.Hitbox.Width}x{sprite.Hitbox.Height}"
+            );
+
+            Console.ResetColor();
         };
 
-        entityVisualManager.Register(player2, "assets/sprites/player.png", 64, 64,
-            (int)positionService.GetX(player2), (int)positionService.GetY(player2));
+
+        entitySpriteManager.Register(player2, "assets/sprites/player.png", 64, 64);
+
+        entitySpriteManager.Register(player1, "assets/sprites/playedr.png", 64, 64);
+
+        entitySpriteManager.Register(player3, "assets/sprites/playedr.png", 64, 64);
+
+        entitySpriteManager.Register(player4, "assets/sprites/playedr.png", 64, 64);
+        //mettre le coordonnées par defaut en tant que entity.pos dans le register directement
 
         bool quit = false;
         bool menu = false;
@@ -1268,29 +1313,46 @@ class Program {
                 if (e.type == SDL_EventType.SDL_KEYDOWN) {
                     if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) {
                         actionDispatcher.DisableInputMapping(); menu = !menu;
-                    } keyboard1.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
+                    } keyboard2.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
                                              // readInput(entity) -> aller voir dans la classe pour notes...
+                                             // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
                 }
             }
 
             renderSystem.SetRenderColor(Color.Black);
             renderSystem.RenderClear();
 
-            foreach (var entity in new[] { player2 }) {
-                if (entityVisualManager.HasSprite(entity)) {
-                    var sprite = entityVisualManager.GetSprite(entity);
-                    var tex = sprite.Texture;
-                    var hitbox = sprite.Hitbox;
+            foreach (var entity in globalStore.Store) {
+                if (entitySpriteManager.HasTexture(entity)) {
+                    var tex = entitySpriteManager.GetSprite(entity).Texture;
 
-                    //mettre ces trucs la dans render et faire .render(entity ou whatever);
                     SDL.SDL_Rect dstRect = new SDL.SDL_Rect { x = tex.X, y = tex.Y, w = tex.Width, h = tex.Height };
                     renderSystem.RenderCopy(tex.TexturePtr, IntPtr.Zero, dstRect);
+                } 
+                if (entitySpriteManager.HasHitbox(entity)) {
+                    var hitbox = entitySpriteManager.GetSprite(entity).Hitbox;
 
-                    if (hitbox != null) {
-                        SDL.SDL_Rect hbRect = new SDL.SDL_Rect { x = hitbox.X, y = hitbox.Y, w = hitbox.Width, h = hitbox.Height };
-                        renderSystem.DrawRectangle(ref hbRect, Color.Red);
-                    }
+                    SDL.SDL_Rect hbRect = new SDL.SDL_Rect { x = hitbox.X, y = hitbox.Y, w = hitbox.Width, h = hitbox.Height };
+
+                    renderSystem.DrawRectangle(ref hbRect, Color.Red);
                 }
+
+
+
+                //if (entitySpriteManager.HasSprite(entity)) {
+                //    var sprite = entitySpriteManager.GetSprite(entity);
+                //    var tex = sprite.Texture;
+                //    var hitbox = sprite.Hitbox;
+
+                //    //mettre ces trucs la dans render et faire .render(entity ou whatever);
+                //    SDL.SDL_Rect dstRect = new SDL.SDL_Rect { x = tex.X, y = tex.Y, w = tex.Width, h = tex.Height };
+                //    renderSystem.RenderCopy(tex.TexturePtr, IntPtr.Zero, dstRect);
+
+                //    if (hitbox != null) {
+                //        SDL.SDL_Rect hbRect = new SDL.SDL_Rect { x = hitbox.X, y = hitbox.Y, w = hitbox.Width, h = hitbox.Height };
+                //        renderSystem.DrawRectangle(ref hbRect, Color.Red);
+                //    }
+                //}
             }
 
 
