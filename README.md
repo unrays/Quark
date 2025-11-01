@@ -1,5 +1,5 @@
 <div align="center">
-# Quark
+# <em>Quark</em>em>
 ### <em>A Modern, Event-Driven C# Game Engine</em>
 
 <p>
