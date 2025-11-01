@@ -72,6 +72,10 @@ If you've read my message so far, I'd like to ask you first of all what you're a
 Some of the information above is slightly incorrect because I ultimately reworked the project, so no, I didn't do all of that in just 4 hours :)
 </p>
 
+---
+
+### Code
+
 ```csharp
 // Copyright (c) October 2025 Félix-Olivier Dumas. All rights reserved.
 // Licensed under the terms described in the LICENSE file
