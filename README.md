@@ -1698,77 +1698,9 @@ class Program {
 }
 ```
 
-## Latest Progress
-<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b" />
-Rendering a sprite offset from its hitbox by 10 units. Modularity++
-
-## Output
-```console
-[Input] Device 'Undefined Controller' triggered 'Start'
-[Input] Alpha pressed Start
-[Input] Device 'Undefined Controller' triggered 'Start'
-[Input] Alpha pressed Start
-[Input] Device 'Undefined Keyboard' triggered 'Alt'
-[Input] Bravo pressed Alt
-[Input] Device 'Undefined Keyboard' triggered 'Alt'
-[Input] Bravo pressed Alt
-[Dialogue] Alpha ␦ Bravo: "d"
-[Health] Alpha took 75 damage | HP: 25/100
-[Health] Alpha healed by 25 | HP: 50/100
-[Health] Alpha took 10 damage | HP: 40/100
-[Health] Bravo took 50 damage | HP: 50/100
-[Health] Bravo healed by 10 | HP: 60/100
-[Health] Charlie took 60 damage | HP: 40/100
-[Movement] Alpha moved to (10, 0)
-[Collision] Bravo collided with Charlie
-[Movement] Bravo moved to (0, 0)
-[Movement] Alpha teleported to (10, 10)
-┌─────────┬─────────┬────────────┐
-│ Entity  │ Health  │ Position   │
-├─────────┼─────────┼────────────┤
-│ Alpha   │ 40/100  │ (10, 10)   │
-├─────────┼─────────┼────────────┤
-│ Bravo   │ 60/100  │ (0, 0)     │
-├─────────┼─────────┼────────────┤
-│ Charlie │ 40/100  │ (0, 0)     │
-├─────────┼─────────┼────────────┤
-│ Delta   │ Invalid │ (NaN, NaN) │
-├─────────┼─────────┼────────────┤
-│ Echo    │ Invalid │ (NaN, NaN) │
-└─────────┴─────────┴────────────┘
-```
-
-## Entity Input Handling with Collision Support
-```console
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (30, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (20, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Collision] Bravo collided with Alpha
-[Movement] Bravo moved to (10, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (0, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_D'
-[Collision] Bravo collided with Alpha
-[Movement] Bravo moved to (10, 10)
-[Input] Bravo executed MoveRight
-[Input] Bravo pressed Key_D
-[Input] Device 'unknown_keyboard_0' triggered 'Key_T'
-Bravo is not allowed to perform 'None'
-[Input] Bravo pressed Key_T
-[Input] Device 'unknown_keyboard_0' triggered 'Key_E'
-Bravo is not allowed to perform 'Interact'
-[Input] Bravo pressed Key_E
-```
 
 </details>
+
+---
+
+*This complete source code is available in [Program.cs](Program.cs)*
