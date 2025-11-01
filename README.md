@@ -1,14 +1,36 @@
-### *A Modern, Event-Driven C# Game Engine*
+<div align="center">
 
-[![C#](https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![SDL2](https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white)](https://www.libsdl.org/)
-[![License](https://img.shields.io/badge/License-Custom-orange?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active%20Development-success?style=flat-square)](https://github.com/unrays/Quark)
+### <em>A Modern, Event-Driven C# Game Engine</em>
 
-*Built with service-driven architecture principles • Started October 26, 2025*
+<p>
+  <a href="https://docs.microsoft.com/en-us/dotnet/csharp/">
+    <img src="https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white" alt="C#">
+  </a>
+  <a href="https://dotnet.microsoft.com/">
+    <img src="https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET">
+  </a>
+  <a href="https://www.libsdl.org/">
+    <img src="https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white" alt="SDL2">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Custom-orange?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/unrays/Quark">
+    <img src="https://img.shields.io/badge/Status-Active%20Development-success?style=flat-square" alt="Status">
+  </a>
+</p>
 
-[Features](#-features) • [Getting Started](#-getting-started) • [Architecture](#-architecture) • [Showcase](#-showcase) • [Documentation](#-documentation)
+<p>
+<em>Built with service-driven architecture principles • Started October 26, 2025</em>
+</p>
+
+<p>
+  <a href="#-features">Features</a> • 
+  <a href="#-getting-started">Getting Started</a> • 
+  <a href="#-architecture">Architecture</a> • 
+  <a href="#-showcase">Showcase</a> • 
+  <a href="#-documentation">Documentation</a>
+</p>
 
 </div>
 
