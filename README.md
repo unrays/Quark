@@ -965,7 +965,7 @@ class Sprite {
     public Sprite(ITexture texture, IHitbox hitbox) => (Texture, Hitbox) = (texture, hitbox);
 }
 
-class EntitySpriteManager {
+class EntitySpriteManager { // ou SpriteManager, à revoir...
     public event Action<Entity, Sprite> OnVisualRegistered;
 
     private readonly PositionService _positionService;
@@ -981,6 +981,7 @@ class EntitySpriteManager {
     public void Register(Entity entity, ITexture texture, IHitbox hitbox) {
         _textureService.Register(entity, texture);
         _hitBoxService.Register(entity, hitbox);
+        _positionService.Teleport(entity, hitbox.X, hitbox.Y);
         OnVisualRegistered?.Invoke(entity, new Sprite(texture, hitbox));
     }
 
@@ -1299,10 +1300,9 @@ class Program {
 
         entitySpriteManager.Register(player1, "assets/sprites/playedr.png", 64, 64);
 
-        entitySpriteManager.Register(player3, "assets/sprites/playedr.png", 64, 64);
+        entitySpriteManager.Register(player3, "assets/sprites/playedr.png", 64, 64, 100, 500);
 
         entitySpriteManager.Register(player4, "assets/sprites/playedr.png", 64, 64);
-        //mettre le coordonnées par defaut en tant que entity.pos dans le register directement
 
         bool quit = false;
         bool menu = false;
