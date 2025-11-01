@@ -1,12 +1,21 @@
-# Quark
+<p align="center">
+  <h1 align="center">Quark</h1>
+  <em>Event-Driven C# Game Engine</em>
+</p>
 
-**Event-Driven C# Game Engine**
+<p align="center">
+  <a href="https://docs.microsoft.com/en-us/dotnet/csharp/">
+    <img src="https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white" alt="C#">
+  </a>
+  <a href="https://dotnet.microsoft.com/">
+    <img src="https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET">
+  </a>
+  <a href="https://www.libsdl.org/">
+    <img src="https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white" alt="SDL2">
+  </a>
+</p>
 
-[![C#](https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![SDL2](https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white)](https://www.libsdl.org/)
-
-*Service-driven architecture • Started October 26, 2025*
+<p align="center"><strong>Service-driven architecture • Started October 26, 2025</strong></p>
 
 ---
 
