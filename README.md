@@ -38,12 +38,39 @@
 ---
 
 ## About
-Event-driven C# engine for managing game entities, positions, health, and interactions.  
+
+<p>
+Event-driven C# engine for managing game entities, positions, health, and interactions.<br>
 The project development commenced on Sunday, October 26, 2025.
+</p>
 
-Welcome to my new attempt at "I'm creating problems for myself because I already have too much work to do". So, here you see the result of 2 days (when I first committed to the repo) of research and personal realignment on the fundamental notions of design and software architecture because I happened to drift a little from my best practices lately. As a result, I re-taught myself about ten hours of personal training on the different architectures and solid principles and I think I trained properly in order to be able to continue on a good basis. The project that I present to you today is simply a kind of game engine that I built around a new type of architecture that I discovered called service driven architecture and which, as its name suggests, consists of orchestrating its systems into different services. I've actually completely fallen in love with this concept and I think it's going to replace my ECS obsession for a few weeks while the traumatic ECS C++ flashbacks fade from my mind. As for this game engine, since this is the 4th time I've tried to talk about it, I'll try to be straight forward. So basically, I started this project this morning on a whim where I had the idea of ​​applying the different notions learned this weekend and I liked the concept of game engine so it was natural that I go there. In fact, it was a few times that I tried to do something similar but each time, I always arrived at the same point where my architecture seemed too rigid and complex for me to scale up and make a real engine of my code. Finally, this new approach pushed me to create something much more SOLID and modular, which allowed me for the first time in my career to experiment with Event and trigger systems, which allowed me to create something much bigger and which makes me much more proud, a Collision System. Okay, I know it might not be the most impressive thing, but you can see that this is my first working collision system ever. In fact, I've never managed to get to this stage, and now that I've done it, I'm looking at new goals to push my skills even further. The architecture you see here is pretty much all done by me only, with the help of documentation of course but it's still 100% out of my head and my brain, and I'm quite proud of it. I made it in 4 hours non-stop almost of programming and I finished this evening, thus pushing my project on github for personal documentation purposes and to showcase my new seasonal and probably very fleeting obsessions. If you've read my message so far, I'd like to ask you first of all what you're actually doing reading 800-word messages from a random guy on GitHub and also, I sincerely thank you for your attention, I hope you enjoyed this little bit of my daily life, I invite you to stay tuned in case I re-re-release another ECS in the coming weeks. On that note, sincerely have a very nice end of the day.
+<p>
+Welcome to my new attempt at <em>"I'm creating problems for myself because I already have too much work to do"</em>. So, here you see the result of 2 days (when I first committed to the repo) of research and personal realignment on the fundamental notions of design and software architecture because I happened to drift a little from my best practices lately. As a result, I re-taught myself about ten hours of personal training on the different architectures and solid principles and I think I trained properly in order to be able to continue on a good basis.
+</p>
 
+<p>
+The project that I present to you today is simply a kind of game engine that I built around a new type of architecture that I discovered called <strong>service driven architecture</strong> and which, as its name suggests, consists of orchestrating its systems into different services. I've actually completely fallen in love with this concept and I think it's going to replace my ECS obsession for a few weeks while the traumatic ECS C++ flashbacks fade from my mind.
+</p>
+
+<p>
+As for this game engine, since this is the 4th time I've tried to talk about it, I'll try to be straight forward. So basically, I started this project this morning on a whim where I had the idea of applying the different notions learned this weekend and I liked the concept of game engine so it was natural that I go there. In fact, it was a few times that I tried to do something similar but each time, I always arrived at the same point where my architecture seemed too rigid and complex for me to scale up and make a real engine of my code.
+</p>
+
+<p>
+Finally, this new approach pushed me to create something much more <strong>SOLID and modular</strong>, which allowed me for the first time in my career to experiment with Event and trigger systems, which allowed me to create something much bigger and which makes me much more proud, a <strong>Collision System</strong>. Okay, I know it might not be the most impressive thing, but you can see that this is my first working collision system ever. In fact, I've never managed to get to this stage, and now that I've done it, I'm looking at new goals to push my skills even further.
+</p>
+
+<p>
+The architecture you see here is pretty much all done by me only, with the help of documentation of course but it's still 100% out of my head and my brain, and I'm quite proud of it. I made it in 4 hours non-stop almost of programming and I finished this evening, thus pushing my project on github for personal documentation purposes and to showcase my new seasonal and probably very fleeting obsessions.
+</p>
+
+<p>
+If you've read my message so far, I'd like to ask you first of all what you're actually doing reading 800-word messages from a random guy on GitHub and also, I sincerely thank you for your attention, I hope you enjoyed this little bit of my daily life, I invite you to stay tuned in case I re-re-release another ECS in the coming weeks. On that note, sincerely have a very nice end of the day.
+</p>
+
+<p>
 Some of the information above is slightly incorrect because I ultimately reworked the project, so no, I didn't do all of that in just 4 hours :)
+</p>
 
 ```csharp
 // Copyright (c) October 2025 Félix-Olivier Dumas. All rights reserved.
