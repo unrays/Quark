@@ -1,6 +1,7 @@
 <div align="center">
-# <em>Quark</em>em>
-### <em>A Modern, Event-Driven C# Game Engine</em>
+
+<h1>Quark</h1>
+<h3><em>A Modern, Event-Driven C# Game Engine</em></h3>
 
 <p>
   <a href="https://docs.microsoft.com/en-us/dotnet/csharp/">
