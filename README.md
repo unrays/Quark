@@ -1,90 +1,76 @@
-<div align="center">
+# Quark
 
-# ⚛️ Quark
-
-### *A Modern, Event-Driven C# Game Engine*
+**Event-Driven C# Game Engine**
 
 [![C#](https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![SDL2](https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white)](https://www.libsdl.org/)
-[![License](https://img.shields.io/badge/License-Custom-orange?style=flat-square)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active%20Development-success?style=flat-square)](https://github.com/unrays/Quark)
 
-*Built with service-driven architecture principles • Started October 26, 2025*
-
-[Features](#-features) • [Getting Started](#-getting-started) • [Architecture](#-architecture) • [Showcase](#-showcase) • [Documentation](#-documentation)
-
-</div>
+*Service-driven architecture • Started October 26, 2025*
 
 ---
 
-## 📖 About
+## About
 
-Welcome to **Quark** – a game engine born from a weekend of architectural enlightenment and SOLID principles. This is my latest attempt at "creating problems for myself when I already have too much work", but here we are!
+Welcome to **Quark** – yet another attempt at "creating problems for myself when I already have too much work to do". But here we are.
 
-After about ten hours of deep-diving into design patterns and software architecture (because I'd drifted from my best practices), I discovered **service-driven architecture**. I fell in love with this concept, and honestly, it's replacing my ECS obsession – at least until those traumatic ECS C++ flashbacks fade away.
+After spending about ten hours re-learning design patterns and software architecture this weekend (because I'd drifted from my best practices), I stumbled upon **service-driven architecture**. Fell completely in love with this concept. It's basically replacing my ECS obsession for now, at least until those traumatic ECS C++ flashbacks fade from my mind.
 
-**Why is this special?** This is the fourth iteration of this idea, but the first time I've created something that actually *scales*. Previous attempts always hit a wall where the architecture felt too rigid. This time, the modular approach finally clicked, allowing me to:
-- Build my first working **collision system** (a personal milestone! 🎉)
-- Implement proper **event-driven interactions**
-- Create a truly **extensible framework**
+**Why this matters:** This is the 4th time I've tried building something like this, but the first time it actually *works* and *scales*. Previous attempts always hit a wall where everything felt too rigid and coupled. This time though, the modular approach finally clicked:
 
-The architecture here is 100% from my head (with documentation help, of course), and I'm genuinely proud of it. While the initial commit claimed "4 hours of work", let's be honest – I ultimately reworked everything, so... maybe a bit more than 4 hours. 😅
+- Built my first working **collision system** (huge personal win!)
+- Got proper **event-driven interactions** working
+- Created something that's actually **extensible**
 
-> **Real talk:** If you're reading this far, I appreciate you taking time to explore a random developer's passion project. This is a showcase of current skills and learning journey. Expect active development, experiments, and maybe another ECS attempt in a few weeks.
+The architecture is 100% from my brain (with docs help obviously), and I'm genuinely proud of it. The initial commit said "4 hours of work" but let's be real – I reworked pretty much everything after, so... definitely more than 4 hours. 😅
 
----
-
-## ✨ Features
-
-### 🎮 Core Engine Systems
-
-- **🎯 Service-Driven Architecture** – Modular, loosely-coupled services for maximum flexibility
-- **⚡ Event System** – Reactive programming with comprehensive event handling
-- **💥 Collision Detection** – Working collision system with event-driven resolution
-- **🎨 Entity-Component System** – Clean entity management with component services
-- **🎮 Multi-Input Support** – Keyboard, Xbox, PlayStation, and Nintendo Switch controller mapping
-- **🏥 Health Management** – Damage and healing system with event notifications
-- **📍 Position & Movement** – Position tracking with teleport and move capabilities
-- **🎭 Visual Management** – Sprite and texture rendering with SDL2
-- **🎨 Color System** – Comprehensive color utilities with interpolation and conversion
-
-### 🛠️ Technical Highlights
-
-- **Clean Architecture** – SOLID principles throughout
-- **Immutable Data Structures** – Functional programming patterns where applicable
-- **Type Safety** – Strong typing with C# 11 features
-- **Event-Driven** – Observer pattern for system communication
-- **Extensible** – Easy to add new systems and services
+> If you're reading this far, thanks for checking out some random dev's passion project. This is basically a showcase of what I'm learning and building. Expect active development, weird experiments, and probably another ECS attempt in a few weeks.
 
 ---
 
-## 🚀 Getting Started
+## Features
 
-### Prerequisites
+**Core Systems:**
+
+- **Service-Driven Architecture** – Modular services that communicate via events
+- **Event System** – Reactive programming for all game interactions
+- **Collision Detection** – First working collision system (big deal for me!)
+- **Entity Management** – Clean component-based entity system
+- **Multi-Input Support** – Keyboard + Xbox/PlayStation/Switch controllers
+- **Health System** – Damage and healing with event notifications
+- **Position & Movement** – Teleport and move with collision checks
+- **Rendering** – SDL2-based sprite and texture rendering
+- **Color Utilities** – 25+ colors with interpolation and conversion
+
+**Technical Stuff:**
+
+- SOLID principles (actually applied, not just buzzwords)
+- Immutable data structures where it makes sense
+- Strong typing with C# 11
+- Observer pattern for system communication
+- Easy to extend with new services
+
+---
+
+## Getting Started
+
+**What you need:**
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or higher
-- SDL2 libraries (for rendering)
-- A C# IDE ([Visual Studio](https://visualstudio.microsoft.com/), [Rider](https://www.jetbrains.com/rider/), or [VS Code](https://code.visualstudio.com/))
+- SDL2 libraries
+- Any C# IDE (Visual Studio, Rider, VS Code)
 
-### Quick Start
+**Quick Start:**
 
 ```bash
-# Clone the repository
 git clone https://github.com/unrays/Quark.git
 cd Quark
-
-# Restore dependencies
 dotnet restore
-
-# Build the project
 dotnet build
-
-# Run the engine
 dotnet run
 ```
 
-### 🎯 Basic Usage Example
+**Basic Usage:**
 
 ```csharp
 // Create entities
@@ -103,23 +89,23 @@ healthService.OnDamaged += (entity, damage, current, max) => {
     Console.WriteLine($"{entity.Name} took {damage} damage! HP: {current}/{max}");
 };
 
-// Perform actions
+// Do stuff
 healthService.Damage(player, 25);
 positionService.Move(player, 10, 5);
 ```
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-Quark uses a **service-driven architecture** where functionality is organized into specialized services that communicate through events. This approach provides:
+Quark uses **service-driven architecture** – basically, functionality is split into specialized services that talk to each other through events. This gives you:
 
-- **Separation of Concerns** – Each service handles one responsibility
-- **Loose Coupling** – Services interact via events, not direct dependencies
-- **Easy Testing** – Services can be tested in isolation
-- **Scalability** – New features are added as new services
+- Clean separation (each service does one thing)
+- Loose coupling (services don't directly depend on each other)
+- Easy testing (test services independently)
+- Scalability (add new services without breaking existing ones)
 
-### 📦 Core Services
+**Core Services:**
 
 <details>
 <summary><b>Entity Management</b></summary>
@@ -222,7 +208,7 @@ public class RenderSystem {
 ```
 </details>
 
-### 🔄 Event Flow Example
+**Event Flow:**
 
 ```
 User Input → InputDevice → InputService → ActionDispatcher → InputManager
@@ -234,22 +220,18 @@ User Input → InputDevice → InputService → ActionDispatcher → InputManage
 
 ---
 
-## 🎨 Showcase
+## Showcase
 
-### Latest Progress
-
-<div align="center">
+**Latest Progress:**
 
 ![Quark Engine Demo](https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b)
 
-*Rendering a sprite with hitbox visualization – showcasing the modular visual system*
+*Sprite rendering with hitbox visualization – showing the modular visual system in action*
 
-</div>
-
-### Console Output Examples
+**Console Output:**
 
 <details>
-<summary><b>Entity System Overview</b></summary>
+<summary><b>Entity System</b></summary>
 
 ```console
 ┌─────────┬─────────┬────────────┐
@@ -284,7 +266,7 @@ User Input → InputDevice → InputService → ActionDispatcher → InputManage
 </details>
 
 <details>
-<summary><b>Input & Collision Handling</b></summary>
+<summary><b>Input & Collision</b></summary>
 
 ```console
 [Input] Device 'unknown_keyboard_0' triggered 'Key_A'
@@ -302,18 +284,18 @@ User Input → InputDevice → InputService → ActionDispatcher → InputManage
 
 ---
 
-## 🎮 Input System
+## Input System
 
-One of Quark's strengths is its comprehensive input mapping system supporting multiple platforms:
+Multi-platform input support:
 
-| Platform | Supported | Bindings |
-|----------|-----------|----------|
-| ⌨️ **Keyboard** | ✅ Yes | Full key mapping (A-Z, 0-9, F1-F12, arrows, modifiers) |
-| 🎮 **Xbox Controller** | ✅ Yes | A/B/X/Y, bumpers, triggers, D-pad, analog sticks |
-| 🎮 **PlayStation** | ✅ Yes | Cross/Circle/Square/Triangle, L/R buttons, D-pad, sticks |
-| 🎮 **Nintendo Switch** | ✅ Yes | A/B/X/Y, L/R/ZL/ZR, D-pad, analog sticks |
+| Platform | Status | Bindings |
+|----------|--------|----------|
+| Keyboard | ✓ | Full mapping (A-Z, 0-9, F1-F12, arrows, modifiers) |
+| Xbox | ✓ | A/B/X/Y, bumpers, triggers, D-pad, sticks |
+| PlayStation | ✓ | Cross/Circle/Square/Triangle, L/R buttons, sticks |
+| Switch | ✓ | A/B/X/Y, L/R/ZL/ZR, D-pad, sticks |
 
-### Action Mapping
+**Actions:**
 
 ```csharp
 public enum Action {
@@ -326,40 +308,36 @@ public enum Action {
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-### 🎨 Color System
-
-Quark includes a rich color system with 25+ predefined colors and utilities:
+**Color System:**
 
 ```csharp
-// Convert to RGBA, Hex, or SDL_Color
+// Convert colors
 var rgba = Color.Red.ToRGBA();           // (255, 0, 0, 255)
 var hex = Color.Blue.ToHex();            // "#0000FF"
 var sdl = Color.Green.ToSDLColor();      // SDL_Color struct
 
-// Color interpolation
+// Interpolate
 var midColor = Color.Red.Lerp(Color.Blue, 0.5f);
 
-// Invert colors
+// Invert
 var inverted = Color.White.Invert();     // Returns Black
 ```
 
-### 🔧 Extending the Engine
+**Adding New Services:**
 
-Adding a new service is straightforward:
-
-1. **Create your service class** with event declarations
-2. **Subscribe to events** from other services as needed
-3. **Register entities** with your service
-4. **Emit events** when state changes
+1. Create your service class with events
+2. Subscribe to events from other services
+3. Register entities with your service
+4. Emit events when state changes
 
 ```csharp
 public class YourCustomService {
     public event Action<Entity, YourData> OnSomethingHappened;
     
     public void Register(Entity entity, YourData data) {
-        // Your logic here
+        // Your logic
         OnSomethingHappened?.Invoke(entity, data);
     }
 }
@@ -367,75 +345,62 @@ public class YourCustomService {
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-### ✅ Completed
+**Done:**
 - [x] Core service architecture
-- [x] Event system implementation
+- [x] Event system
 - [x] Collision detection
-- [x] Multi-platform input handling
-- [x] Basic rendering with SDL2
-- [x] Entity component system
-- [x] Health and position management
+- [x] Multi-platform input
+- [x] SDL2 rendering
+- [x] Entity components
+- [x] Health/position management
 
-### 🚧 In Progress
-- [ ] Menu system and UI framework
-- [ ] Improved collision resolution
+**Working on:**
+- [ ] Menu system
+- [ ] Better collision resolution
 - [ ] Animation system
 - [ ] Scene management
 
-### 🔮 Planned Features
-- [ ] Physics engine integration
+**Maybe later:**
+- [ ] Physics engine
 - [ ] Audio service
 - [ ] Particle systems
-- [ ] Networking capabilities
+- [ ] Networking
 - [ ] Level editor
 - [ ] Scripting support
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-This is primarily a personal learning project and skills showcase, but I'm open to suggestions and feedback! Feel free to:
+This is mainly a personal learning project, but feel free to:
 
-- 🐛 Report bugs via [Issues](https://github.com/unrays/Quark/issues)
-- 💡 Suggest features or improvements
-- 📖 Improve documentation
-- ⭐ Star the repo if you find it interesting!
-
----
-
-## 📄 License
-
-This project is licensed under a custom license. See the [LICENSE](LICENSE) file for details.
+- Report bugs via [Issues](https://github.com/unrays/Quark/issues)
+- Suggest features
+- Improve docs
+- Star if you find it interesting
 
 ---
 
-## 🙏 Acknowledgments
+## License
+
+Custom license. See [LICENSE](LICENSE) for details.
+
+---
+
+## Credits
 
 Built with:
-- [SDL2](https://www.libsdl.org/) – Cross-platform multimedia library
-- [ImGui.NET](https://github.com/mellinoe/ImGui.NET) – Immediate mode GUI
-- [ConsoleTableExt](https://github.com/minhhungit/ConsoleTableExt) – Beautiful console tables
+- [SDL2](https://www.libsdl.org/) – Graphics
+- [ImGui.NET](https://github.com/mellinoe/ImGui.NET) – UI
+- [ConsoleTableExt](https://github.com/minhhungit/ConsoleTableExt) – Pretty tables
 
-Inspired by countless hours studying software architecture, ECS patterns, and modern game engine design.
-
----
-
-<div align="center">
-
-### 💬 Get In Touch
-
-Have questions? Want to discuss architecture patterns? Found this interesting?
-
-[Open an Issue](https://github.com/unrays/Quark/issues) • [View Source](https://github.com/unrays/Quark)
+Lots of coffee and architecture docs.
 
 ---
 
-*Built with ❤️ and too much coffee*  
 *© 2025 Félix-Olivier Dumas*
-
-</div>
 
 ---
 
