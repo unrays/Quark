@@ -74,7 +74,7 @@ Some of the information above is slightly incorrect because I ultimately reworke
 
 ---
 
-### Code
+## Full Code
 
 ```csharp
 // Copyright (c) October 2025 Félix-Olivier Dumas. All rights reserved.
