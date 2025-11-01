@@ -1,10 +1,411 @@
 # Quark
-Event-driven C# engine for managing game entities, positions, health, and interactions.  
-The project development commenced on Sunday, October 26, 2025.
 
-Welcome to my new attempt at "I'm creating problems for myself because I already have too much work to do". So, here you see the result of 2 days (when I first committed to the repo) of research and personal realignment on the fundamental notions of design and software architecture because I happened to drift a little from my best practices lately. As a result, I re-taught myself about ten hours of personal training on the different architectures and solid principles and I think I trained properly in order to be able to continue on a good basis. The project that I present to you today is simply a kind of game engine that I built around a new type of architecture that I discovered called service driven architecture and which, as its name suggests, consists of orchestrating its systems into different services. I've actually completely fallen in love with this concept and I think it's going to replace my ECS obsession for a few weeks while the traumatic ECS C++ flashbacks fade from my mind. As for this game engine, since this is the 4th time I've tried to talk about it, I'll try to be straight forward. So basically, I started this project this morning on a whim where I had the idea of ​​applying the different notions learned this weekend and I liked the concept of game engine so it was natural that I go there. In fact, it was a few times that I tried to do something similar but each time, I always arrived at the same point where my architecture seemed too rigid and complex for me to scale up and make a real engine of my code. Finally, this new approach pushed me to create something much more SOLID and modular, which allowed me for the first time in my career to experiment with Event and trigger systems, which allowed me to create something much bigger and which makes me much more proud, a Collision System. Okay, I know it might not be the most impressive thing, but you can see that this is my first working collision system ever. In fact, I've never managed to get to this stage, and now that I've done it, I'm looking at new goals to push my skills even further. The architecture you see here is pretty much all done by me only, with the help of documentation of course but it's still 100% out of my head and my brain, and I'm quite proud of it. I made it in 4 hours non-stop almost of programming and I finished this evening, thus pushing my project on github for personal documentation purposes and to showcase my new seasonal and probably very fleeting obsessions. If you've read my message so far, I'd like to ask you first of all what you're actually doing reading 800-word messages from a random guy on GitHub and also, I sincerely thank you for your attention, I hope you enjoyed this little bit of my daily life, I invite you to stay tuned in case I re-re-release another ECS in the coming weeks. On that note, sincerely have a very nice end of the day.
+**Event-Driven C# Game Engine**
 
-Some of the information above is slightly incorrect because I ultimately reworked the project, so no, I didn't do all of that in just 4 hours :)
+[![C#](https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white)](https://docs.microsoft.com/en-us/dotnet/csharp/)
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![SDL2](https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white)](https://www.libsdl.org/)
+
+*Service-driven architecture • Started October 26, 2025*
+
+---
+
+## About
+
+Welcome to **Quark** – yet another attempt at "creating problems for myself when I already have too much work to do". But here we are.
+
+After spending about ten hours re-learning design patterns and software architecture this weekend (because I'd drifted from my best practices), I stumbled upon **service-driven architecture**. Fell completely in love with this concept. It's basically replacing my ECS obsession for now, at least until those traumatic ECS C++ flashbacks fade from my mind.
+
+**Why this matters:** This is the 4th time I've tried building something like this, but the first time it actually *works* and *scales*. Previous attempts always hit a wall where everything felt too rigid and coupled. This time though, the modular approach finally clicked:
+
+- Built my first working **collision system** (huge personal win!)
+- Got proper **event-driven interactions** working
+- Created something that's actually **extensible**
+
+The architecture is 100% from my brain (with docs help obviously), and I'm genuinely proud of it. The initial commit said "4 hours of work" but let's be real – I reworked pretty much everything after, so... definitely more than 4 hours. 😅
+
+> If you're reading this far, thanks for checking out some random dev's passion project. This is basically a showcase of what I'm learning and building. Expect active development, weird experiments, and probably another ECS attempt in a few weeks.
+
+---
+
+## Features
+
+**Core Systems:**
+
+- **Service-Driven Architecture** – Modular services that communicate via events
+- **Event System** – Reactive programming for all game interactions
+- **Collision Detection** – First working collision system (big deal for me!)
+- **Entity Management** – Clean component-based entity system
+- **Multi-Input Support** – Keyboard + Xbox/PlayStation/Switch controllers
+- **Health System** – Damage and healing with event notifications
+- **Position & Movement** – Teleport and move with collision checks
+- **Rendering** – SDL2-based sprite and texture rendering
+- **Color Utilities** – 25+ colors with interpolation and conversion
+
+**Technical Stuff:**
+
+- SOLID principles (actually applied, not just buzzwords)
+- Immutable data structures where it makes sense
+- Strong typing with C# 11
+- Observer pattern for system communication
+- Easy to extend with new services
+
+---
+
+## Getting Started
+
+**What you need:**
+
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or higher
+- SDL2 libraries
+- Any C# IDE (Visual Studio, Rider, VS Code)
+
+**Quick Start:**
+
+```bash
+git clone https://github.com/unrays/Quark.git
+cd Quark
+dotnet restore
+dotnet build
+dotnet run
+```
+
+**Basic Usage:**
+
+```csharp
+// Create entities
+Entity player = Player.Create("Hero");
+
+// Set up services
+var healthService = new HealthService();
+var positionService = new PositionService();
+
+// Register components
+healthService.Register(player, Health.Create(100, 100));
+positionService.Register(player, Vector2.Create(0, 0));
+
+// Subscribe to events
+healthService.OnDamaged += (entity, damage, current, max) => {
+    Console.WriteLine($"{entity.Name} took {damage} damage! HP: {current}/{max}");
+};
+
+// Do stuff
+healthService.Damage(player, 25);
+positionService.Move(player, 10, 5);
+```
+
+---
+
+## Architecture
+
+Quark uses **service-driven architecture** – basically, functionality is split into specialized services that talk to each other through events. This gives you:
+
+- Clean separation (each service does one thing)
+- Loose coupling (services don't directly depend on each other)
+- Easy testing (test services independently)
+- Scalability (add new services without breaking existing ones)
+
+**Core Services:**
+
+<details>
+<summary><b>Entity Management</b></summary>
+
+```csharp
+// EntityStore - Central registry for all entities
+public class EntityStore {
+    public IReadOnlyList<Entity> Store { get; }
+    public void Register(Entity entity);
+}
+```
+</details>
+
+<details>
+<summary><b>Health System</b></summary>
+
+```csharp
+// HealthService - Manages entity health and damage
+public class HealthService {
+    public event Action<Entity, Int32, Int32, Int32> OnDamaged;
+    public event Action<Entity, Int32, Int32, Int32> OnHealed;
+    
+    public void Register(Entity entity, IHealth health);
+    public void Damage(Entity entity, Int32 damage);
+    public void Heal(Entity entity, Int32 heal);
+}
+```
+</details>
+
+<details>
+<summary><b>Position System</b></summary>
+
+```csharp
+// PositionService - Handles entity positioning and movement
+public class PositionService {
+    public event Action<Entity, double, double> OnMoved;
+    public event Action<Entity, double, double> OnTeleported;
+    
+    public void Register(Entity entity, IVector2 position);
+    public void Move(Entity entity, Double dX, Double dY);
+    public void Teleport(Entity entity, Double X, Double Y);
+}
+```
+</details>
+
+<details>
+<summary><b>Collision System</b></summary>
+
+```csharp
+// CollisionManager - Detects and resolves entity collisions
+public class CollisionManager {
+    public event Action<Entity, Entity> OnCollision;
+    
+    public void CheckCollisions(Entity entity, double x, double y);
+    public void ResolveCollisions(Entity collider, Entity collided);
+}
+```
+</details>
+
+<details>
+<summary><b>Input System</b></summary>
+
+```csharp
+// InputService - Multi-platform input handling
+public class InputService {
+    public event Action<Entity, InputKey> EntityInputRequested;
+    
+    public void BindInputDevice(InputDevice inputDevice, Entity entity);
+    public void ProcessInput(InputDevice inputDevice, InputKey inputKey);
+}
+
+// ActionDispatcher - Maps inputs to game actions
+public class ActionDispatcher {
+    public event Action<Entity, Action> EntityActionRequested;
+    
+    public void MapInput(Entity entity, InputKey input);
+    public void ToggleInputMapping();
+}
+```
+</details>
+
+<details>
+<summary><b>Visual System</b></summary>
+
+```csharp
+// EntityVisualManager - Manages sprites, textures, and rendering
+public class EntityVisualManager {
+    public event Action<Entity, Sprite> OnVisualRegistered;
+    
+    public void Register(Entity entity, ITexture texture, IHitbox hitbox);
+    public Sprite GetSprite(Entity entity);
+}
+
+// RenderSystem - SDL2-based rendering
+public class RenderSystem {
+    public void RenderPresent();
+    public void DrawRectangle(Int32 x, Int32 y, Int32 w, Int32 h, Color color);
+    public void RenderCopy(IntPtr texture, SDL_Rect dstRect);
+}
+```
+</details>
+
+**Event Flow:**
+
+```
+User Input → InputDevice → InputService → ActionDispatcher → InputManager
+                                                    ↓
+                                             PositionService
+                                                    ↓
+                                           CollisionManager → Event Handlers
+```
+
+---
+
+## Showcase
+
+**Latest Progress:**
+
+![Quark Engine Demo](https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b)
+
+*Sprite rendering with hitbox visualization – showing the modular visual system in action*
+
+**Console Output:**
+
+<details>
+<summary><b>Entity System</b></summary>
+
+```console
+┌─────────┬─────────┬────────────┐
+│ Entity  │ Health  │ Position   │
+├─────────┼─────────┼────────────┤
+│ Alpha   │ 40/100  │ (10, 10)   │
+├─────────┼─────────┼────────────┤
+│ Bravo   │ 60/100  │ (0, 0)     │
+├─────────┼─────────┼────────────┤
+│ Charlie │ 40/100  │ (0, 0)     │
+├─────────┼─────────┼────────────┤
+│ Delta   │ Invalid │ (NaN, NaN) │
+├─────────┼─────────┼────────────┤
+│ Echo    │ Invalid │ (NaN, NaN) │
+└─────────┴─────────┴────────────┘
+```
+</details>
+
+<details>
+<summary><b>Event Logging</b></summary>
+
+```console
+[Dialogue] Alpha → Bravo: "d"
+[Health] Alpha took 75 damage | HP: 25/100
+[Health] Alpha healed by 25 | HP: 50/100
+[Health] Alpha took 10 damage | HP: 40/100
+[Movement] Alpha moved to (10, 0)
+[Collision] Bravo collided with Charlie
+[Movement] Bravo moved to (0, 0)
+[Movement] Alpha teleported to (10, 10)
+```
+</details>
+
+<details>
+<summary><b>Input & Collision</b></summary>
+
+```console
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Input] Bravo pressed Key_A
+[Input] Bravo executed MoveLeft
+[Movement] Bravo moved to (30, 10)
+
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Input] Bravo pressed Key_A
+[Input] Bravo executed MoveLeft
+[Collision] Bravo collided with Alpha
+[Movement] Bravo moved to (10, 10)
+```
+</details>
+
+---
+
+## Input System
+
+Multi-platform input support:
+
+| Platform | Status | Bindings |
+|----------|--------|----------|
+| Keyboard | ✓ | Full mapping (A-Z, 0-9, F1-F12, arrows, modifiers) |
+| Xbox | ✓ | A/B/X/Y, bumpers, triggers, D-pad, sticks |
+| PlayStation | ✓ | Cross/Circle/Square/Triangle, L/R buttons, sticks |
+| Switch | ✓ | A/B/X/Y, L/R/ZL/ZR, D-pad, sticks |
+
+**Actions:**
+
+```csharp
+public enum Action {
+    MoveUp, MoveDown, MoveLeft, MoveRight,
+    Jump, Attack, Interact, Reload,
+    Crouch, Sprint, Dash, Use,
+    OpenMenu, Pause, Confirm, Cancel
+}
+```
+
+---
+
+## Documentation
+
+**Color System:**
+
+```csharp
+// Convert colors
+var rgba = Color.Red.ToRGBA();           // (255, 0, 0, 255)
+var hex = Color.Blue.ToHex();            // "#0000FF"
+var sdl = Color.Green.ToSDLColor();      // SDL_Color struct
+
+// Interpolate
+var midColor = Color.Red.Lerp(Color.Blue, 0.5f);
+
+// Invert
+var inverted = Color.White.Invert();     // Returns Black
+```
+
+**Adding New Services:**
+
+1. Create your service class with events
+2. Subscribe to events from other services
+3. Register entities with your service
+4. Emit events when state changes
+
+```csharp
+public class YourCustomService {
+    public event Action<Entity, YourData> OnSomethingHappened;
+    
+    public void Register(Entity entity, YourData data) {
+        // Your logic
+        OnSomethingHappened?.Invoke(entity, data);
+    }
+}
+```
+
+---
+
+## Roadmap
+
+**Done:**
+- [x] Core service architecture
+- [x] Event system
+- [x] Collision detection
+- [x] Multi-platform input
+- [x] SDL2 rendering
+- [x] Entity components
+- [x] Health/position management
+
+**Working on:**
+- [ ] Menu system
+- [ ] Better collision resolution
+- [ ] Animation system
+- [ ] Scene management
+
+**Maybe later:**
+- [ ] Physics engine
+- [ ] Audio service
+- [ ] Particle systems
+- [ ] Networking
+- [ ] Level editor
+- [ ] Scripting support
+
+---
+
+## Contributing
+
+This is mainly a personal learning project, but feel free to:
+
+- Report bugs via [Issues](https://github.com/unrays/Quark/issues)
+- Suggest features
+- Improve docs
+- Star if you find it interesting
+
+---
+
+## License
+
+Custom license. See [LICENSE](LICENSE) for details.
+
+---
+
+## Credits
+
+Built with:
+- [SDL2](https://www.libsdl.org/) – Graphics
+- [ImGui.NET](https://github.com/mellinoe/ImGui.NET) – UI
+- [ConsoleTableExt](https://github.com/minhhungit/ConsoleTableExt) – Pretty tables
+
+Lots of coffee and architecture docs.
+
+---
+
+*© 2025 Félix-Olivier Dumas*
+
+---
+
+<details>
+<summary><b>📜 Full Source Code Example</b></summary>
 
 ```csharp
 // Copyright (c) October 2025 Félix-Olivier Dumas. All rights reserved.
@@ -1262,75 +1663,9 @@ class Program {
 }
 ```
 
-## Latest Progress
-<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/ff4ce1c7-6e44-4fc3-8f82-69860559ca5b" />
-Rendering a sprite offset from its hitbox by 10 units. Modularity++
 
-## Output
-```console
-[Input] Device 'Undefined Controller' triggered 'Start'
-[Input] Alpha pressed Start
-[Input] Device 'Undefined Controller' triggered 'Start'
-[Input] Alpha pressed Start
-[Input] Device 'Undefined Keyboard' triggered 'Alt'
-[Input] Bravo pressed Alt
-[Input] Device 'Undefined Keyboard' triggered 'Alt'
-[Input] Bravo pressed Alt
-[Dialogue] Alpha ␦ Bravo: "d"
-[Health] Alpha took 75 damage | HP: 25/100
-[Health] Alpha healed by 25 | HP: 50/100
-[Health] Alpha took 10 damage | HP: 40/100
-[Health] Bravo took 50 damage | HP: 50/100
-[Health] Bravo healed by 10 | HP: 60/100
-[Health] Charlie took 60 damage | HP: 40/100
-[Movement] Alpha moved to (10, 0)
-[Collision] Bravo collided with Charlie
-[Movement] Bravo moved to (0, 0)
-[Movement] Alpha teleported to (10, 10)
-┌─────────┬─────────┬────────────┐
-│ Entity  │ Health  │ Position   │
-├─────────┼─────────┼────────────┤
-│ Alpha   │ 40/100  │ (10, 10)   │
-├─────────┼─────────┼────────────┤
-│ Bravo   │ 60/100  │ (0, 0)     │
-├─────────┼─────────┼────────────┤
-│ Charlie │ 40/100  │ (0, 0)     │
-├─────────┼─────────┼────────────┤
-│ Delta   │ Invalid │ (NaN, NaN) │
-├─────────┼─────────┼────────────┤
-│ Echo    │ Invalid │ (NaN, NaN) │
-└─────────┴─────────┴────────────┘
-```
+</details>
 
-## Entity Input Handling with Collision Support
-```console
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (30, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (20, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Collision] Bravo collided with Alpha
-[Movement] Bravo moved to (10, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
-[Movement] Bravo moved to (0, 10)
-[Input] Bravo executed MoveLeft
-[Input] Bravo pressed Key_A
-[Input] Device 'unknown_keyboard_0' triggered 'Key_D'
-[Collision] Bravo collided with Alpha
-[Movement] Bravo moved to (10, 10)
-[Input] Bravo executed MoveRight
-[Input] Bravo pressed Key_D
-[Input] Device 'unknown_keyboard_0' triggered 'Key_T'
-Bravo is not allowed to perform 'None'
-[Input] Bravo pressed Key_T
-[Input] Device 'unknown_keyboard_0' triggered 'Key_E'
-Bravo is not allowed to perform 'Interact'
-[Input] Bravo pressed Key_E
-```
+---
+
+*This complete source code is available in [Program.cs](Program.cs)*
