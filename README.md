@@ -94,7 +94,9 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Xml.Linq;
 using Windows.Gaming.Input;
 using Windows.Perception.Spatial;
@@ -519,8 +521,9 @@ class Vector2 : IVector2 {
 
 class PositionService {
     private readonly Dictionary<Guid, IVector2> _positionById;
-    public event Action<Entity, double, double> OnTeleported;
-    public event Action<Entity, double, double> OnMoved;
+    public event Action<Entity, IVector2> OnTeleported;
+    public event Action<Entity, IVector2> OnMoved;
+    public static event Func<Entity, IVector2, bool> RequestMove;
 
     public PositionService() => _positionById = new Dictionary<Guid, IVector2>();
 
@@ -531,16 +534,24 @@ class PositionService {
     public Double GetY(Entity entity) { _positionById.TryGetValue(entity.Id, out var value); return value.Y; }
     public (Double X, Double Y) GetPosition(Entity entity) => (GetX(entity), GetY(entity));
 
-    public void Move(Entity entity, Double dX, Double dY) {
+    public void MoveInternal(Entity entity, Double dX, Double dY) {
         if (_positionById.TryGetValue(entity.Id, out var position))
             _positionById[entity.Id] = position.WithXY((position.X + dX), (position.Y + dY));
-        OnMoved?.Invoke(entity, _positionById[entity.Id].X, _positionById[entity.Id].Y);
+    } // deleter car ca sert plus a rien
+
+    public void Move(Entity entity, Double dX, Double dY) {
+        if (!_positionById.TryGetValue(entity.Id, out var position)) return;
+        var nextPos = position.WithXY(position.X + dX, position.Y + dY);
+        bool canMove = RequestMove?.Invoke(entity, nextPos) ?? true;
+        if (canMove) {
+            _positionById[entity.Id] = nextPos;OnMoved?.Invoke(entity, nextPos);
+        }
     }
 
     public void Teleport(Entity entity, Double X, Double Y) {
         if (_positionById.TryGetValue(entity.Id, out var position))
             _positionById[entity.Id] = position.WithXY(X, Y);
-        OnTeleported?.Invoke(entity, _positionById[entity.Id].X, _positionById[entity.Id].Y);
+        OnTeleported?.Invoke(entity, Vector2.Create(_positionById[entity.Id].X, _positionById[entity.Id].Y));
     }
 
     //possiblement recevoir le event du collider et décider si l'objet bouge ou il reste au meme endroit
@@ -598,15 +609,16 @@ class CollisionManager {
     private readonly HitboxService _hitboxService;
     private readonly EntityStore _entityStore;
 
-    private const double EPSILON = 2.5;
+    private const double EPSILON = -3;
 
     public CollisionManager(EntityStore entityStore, PositionService positionService, HitboxService hitboxService) {
         (_entityStore, _positionService, _hitboxService) = (entityStore, positionService, hitboxService);
         //positionService.OnMoved += CheckCollisions;
-        positionService.OnMoved += HitboxCollisionCheck;
-    } 
+        //positionService.OnMoved += HitboxCollisionCheck;
+        PositionService.RequestMove += (entity, nextPos) => !this.HitboxCollisionCheck(entity, nextPos);
+    }
 
-    public void CheckCollisions(Entity entity, double x, double y) {
+    public void CheckCollisions(Entity entity, IVector2 position) { // un peu deprecated, refaire pour return bool...
         foreach (var storedEntity in _entityStore.Store) {
             if (entity == storedEntity
                 || !_positionService.HasPosition(storedEntity)
@@ -621,7 +633,7 @@ class CollisionManager {
         }
     }
 
-    public void HitboxCollisionCheck(Entity entity, double x, double y) {
+    public bool HitboxCollisionCheck(Entity entity, IVector2 nextPosition) {
         foreach (var storedEntity in _entityStore.Store) {
             if (entity == storedEntity
                 || !_positionService.HasPosition(storedEntity)
@@ -630,18 +642,67 @@ class CollisionManager {
                 || !_hitboxService.HasHitbox(entity))
                 continue;
 
-            var hbA = _hitboxService.GetHitbox(entity);
-            var hbB = _hitboxService.GetHitbox(storedEntity);
+            //var hbA = _hitboxService.GetHitbox(entity);
+            //var hbB = _hitboxService.GetHitbox(storedEntity);
+
+            var currentHitbox = _hitboxService.GetHitbox(entity);
+            var hbA = new Hitbox(
+                (int)(nextPosition.X + (currentHitbox.X - _positionService.GetX(entity))),
+                (int)(nextPosition.Y + (currentHitbox.Y - _positionService.GetY(entity))),
+                currentHitbox.Width,
+                currentHitbox.Height
+            ); var hbB = _hitboxService.GetHitbox(storedEntity);
 
             if (hbA.X < hbB.X + hbB.Width + EPSILON
              && hbA.X + hbA.Width > hbB.X - EPSILON
              && hbA.Y < hbB.Y + hbB.Height + EPSILON
-             && hbA.Y + hbA.Height > hbB.Y - EPSILON)
-             ResolveCollisions(entity, storedEntity);
-        }
+             && hbA.Y + hbA.Height > hbB.Y - EPSILON) {
+                ResolveCollisions(entity, storedEntity);
+                return true;
+            }
+        } return false;
     }
 
     public void ResolveCollisions(Entity collider, Entity collided) => OnCollision?.Invoke(collider, collided);
+}
+
+interface IPhysic { }
+class BasicPhysic : IPhysic {
+
+}
+
+// move (bouge pas encore) -> PhysicSystem (est-ce que je peux bouger?) -> checkCollision (oui/non) ->
+
+class PhysicsSystem {
+    private readonly Dictionary<Guid, IPhysic> _physicById;
+    private readonly PositionService _positionService;
+    private readonly CollisionManager _collisionManager;
+    private readonly HitboxService _hitboxService;
+    
+    public PhysicsSystem(PositionService positionService, CollisionManager collisionManager, HitboxService hitboxService) {
+        (_positionService, _collisionManager, _hitboxService) = (positionService, collisionManager, hitboxService);
+        _collisionManager.OnCollision += test;
+    }
+
+    public void test(Entity collider, Entity collided) { // mettre dans basicPhysic, juste pour tester
+        //var A = _hitboxService.HasHitbox(collider) ? _hitboxService.GetHitbox(collider) : null;
+        //var B = _hitboxService.HasHitbox(collided) ? _hitboxService.GetHitbox(collided) : null;
+        //if (A == null || B == null) return;
+
+        //var overlapX = Math.Min(A.X + A.Width, B.X + B.Width) - Math.Max(A.X, B.X);
+        //var overlapY = Math.Min(A.Y + A.Height, B.Y + B.Height) - Math.Max(A.Y, B.Y);
+
+        //double dx = 0, dy = 0;
+        //if (overlapX < overlapY) {
+        //    dx = overlapX * Math.Sign(A.X - B.X);
+        //} else {
+        //    dy = overlapY * Math.Sign(A.Y - B.Y);
+        //}
+
+        //_positionService.MoveInternal(collider, dx, dy);
+    }
+
+
 }
 
 public class ConversationManager {
@@ -998,18 +1059,18 @@ class EntitySpriteManager { // ou SpriteManager, à revoir...
     public Sprite GetSprite(Entity entity) =>
         new Sprite(_textureService.GetTexture(entity), _hitBoxService.GetHitbox(entity));
 
-    private void UpdateVisualPosition(Entity entity, double x, double y) { // 9-1-1 illegal
+    private void UpdateVisualPosition(Entity entity, IVector2 position) { // 9-1-1 illegal
         var tex = _textureService.GetTexture(entity);
         var hb = _hitBoxService.GetHitbox(entity); //deplacer dans le truc inputmanager
 
         if (tex != null) {
-            tex.X = (int)x;
-            tex.Y = (int)y;
+            tex.X = (int)position.X;
+            tex.Y = (int)position.Y;
         }
 
         if (hb != null) {
-            hb.X = (int)x;
-            hb.Y = (int)y;
+            hb.X = (int)position.X;
+            hb.Y = (int)position.Y;
         }
 
         Console.WriteLine($"{tex.X} {tex.Y} | {hb.X} {hb.Y}");
@@ -1108,6 +1169,8 @@ class Program {
         var positionService = new PositionService();
         var collisionManager = new CollisionManager(globalStore, positionService, hitboxService);
 
+        var physicSystem = new PhysicsSystem(positionService, collisionManager, hitboxService);
+
         var inputService = new InputService(globalStore);
 
         var actionService = new ActionService();
@@ -1123,13 +1186,13 @@ class Program {
             Console.WriteLine($"[Dialogue] {a.Name} → {b.Name}: \"{message}\"");
         };
 
-        positionService.OnMoved += (entity, x, y) => {
-            Console.WriteLine($"[Movement] {entity.Name} moved to ({x:0.##}, {y:0.##})");
+        positionService.OnMoved += (entity, position) => {
+            Console.WriteLine($"[Movement] {entity.Name} moved to ({position.X:0.##}, {position.Y:0.##})");
             //collisionManager.CheckCollisions(entity);
         };
 
-        positionService.OnTeleported += (entity, x, y) => {
-            Console.WriteLine($"[Movement] {entity.Name} teleported to ({x:0.##}, {y:0.##})");
+        positionService.OnTeleported += (entity, position) => {
+            Console.WriteLine($"[Movement] {entity.Name} teleported to ({position.X:0.##}, {position.Y:0.##})");
         };
 
         healthService.OnDamaged += (entity, damage, currentHealth, maxHealth) => {
@@ -1215,10 +1278,10 @@ class Program {
         healthService.Register(player2, basicHealth);
         healthService.Register(player3, basicHealth);
 
-        positionService.Register(player1, Vector2.Create(0, 0));
-        positionService.Register(player2, Vector2.Create(0, 0));
-        positionService.Register(player3, Vector2.Create(0, 0));
-        positionService.Register(player4, Vector2.Create(0, 0));
+        positionService.Register(player1, Vector2.Create(50, 50));
+        positionService.Register(player2, Vector2.Create(200, 200));
+        positionService.Register(player3, Vector2.Create(300, 300));
+        positionService.Register(player4, Vector2.Create(400, 400));
 
         healthService.Damage(player1, 75);
         healthService.Heal(player1, 25);
@@ -1229,12 +1292,12 @@ class Program {
 
         healthService.Damage(player3, 60);
 
-        positionService.Move(player1, 100, 00);
-        positionService.Move(player2, 50, 250);
-        positionService.Move(player3, 500, 150);
-        positionService.Move(player4, 500, 500);
+        //positionService.Move(player1, 100, 0);
+        //positionService.Move(player2, 50, 250);
+        //positionService.Move(player3, 500, 150);
+        //positionService.Move(player4, 500, 500);
 
-        positionService.Teleport(player1, 10, 10);
+        //positionService.Teleport(player1, 10, 10);
 
         /*********************************************************/
 
