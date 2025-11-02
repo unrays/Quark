@@ -6,18 +6,22 @@ using ImGuiGeneral;
 using ImGuiNET;
 using SDL2;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using System.Security;
 using System.Xml.Linq;
 using Windows.Gaming.Input;
 using Windows.Perception.Spatial;
 using Windows.UI.Xaml.Controls;
 using static SDL2.SDL;
 using static System.Net.Mime.MediaTypeNames;
+using static Uno.CompositionConfiguration;
 
 public static class InputKeyAdapterSDL {
     public static InputKey FromSDLKey(SDL_Keycode key) => key switch {
@@ -286,64 +290,86 @@ public static class ColorConverter {
 }
 
 public static class ActionMapper {
-    public static Action FromInput(InputKey input) {
-        return input switch {
-            InputKey.Key_W or InputKey.Key_UpArrow or
-            InputKey.Xbox_DPadUp or InputKey.Xbox_LS_Up or
-            InputKey.PS_DPadUp or InputKey.PS_LS_Up or
-            InputKey.Switch_DPadUp or InputKey.Switch_LS_Up => Action.MoveUp,
+    public static Action FromInput(IEnumerable<InputKey> inputs) {
+        Action result = Action.None;
 
-            InputKey.Key_S or InputKey.Key_DownArrow or
-            InputKey.Xbox_DPadDown or InputKey.Xbox_LS_Down or
-            InputKey.PS_DPadDown or InputKey.PS_LS_Down or
-            InputKey.Switch_DPadDown or InputKey.Switch_LS_Down => Action.MoveDown,
+        foreach (var input in inputs) {
+            result |= input switch {
+                InputKey.Key_W or InputKey.Key_UpArrow or
+                InputKey.Xbox_DPadUp or InputKey.Xbox_LS_Up or
+                InputKey.PS_DPadUp or InputKey.PS_LS_Up or
+                InputKey.Switch_DPadUp or InputKey.Switch_LS_Up => Action.MoveUp,
 
-            InputKey.Key_A or InputKey.Key_LeftArrow or
-            InputKey.Xbox_DPadLeft or InputKey.Xbox_LS_Left or
-            InputKey.PS_DPadLeft or InputKey.PS_LS_Left or
-            InputKey.Switch_DPadLeft or InputKey.Switch_LS_Left => Action.MoveLeft,
+                InputKey.Key_S or InputKey.Key_DownArrow or
+                InputKey.Xbox_DPadDown or InputKey.Xbox_LS_Down or
+                InputKey.PS_DPadDown or InputKey.PS_LS_Down or
+                InputKey.Switch_DPadDown or InputKey.Switch_LS_Down => Action.MoveDown,
 
-            InputKey.Key_D or InputKey.Key_RightArrow or
-            InputKey.Xbox_DPadRight or InputKey.Xbox_LS_Right or
-            InputKey.PS_DPadRight or InputKey.PS_LS_Right or
-            InputKey.Switch_DPadRight or InputKey.Switch_LS_Right => Action.MoveRight,
+                InputKey.Key_A or InputKey.Key_LeftArrow or
+                InputKey.Xbox_DPadLeft or InputKey.Xbox_LS_Left or
+                InputKey.PS_DPadLeft or InputKey.PS_LS_Left or
+                InputKey.Switch_DPadLeft or InputKey.Switch_LS_Left => Action.MoveLeft,
 
-            InputKey.Key_Space => Action.Jump,
-            InputKey.Key_F => Action.Attack,
-            InputKey.Key_E => Action.Interact,
-            InputKey.Key_R => Action.Reload,
-            InputKey.Key_C => Action.Crouch,
-            InputKey.Key_LeftShift or InputKey.Xbox_LB or InputKey.PS_L1 or InputKey.Switch_L => Action.Sprint,
-            InputKey.Key_LeftCtrl or InputKey.Xbox_RB or InputKey.PS_R1 or InputKey.Switch_R => Action.Dash,
-            InputKey.Key_Q or InputKey.Xbox_Y or InputKey.PS_Triangle or InputKey.Switch_Y => Action.Use,
-            InputKey.Key_Escape or InputKey.Xbox_Back or InputKey.PS_Share or InputKey.Switch_Minus => Action.OpenMenu,
-            InputKey.Key_P or InputKey.Xbox_Start or InputKey.PS_Options or InputKey.Switch_Plus => Action.Pause,
-            InputKey.Key_Enter or InputKey.Xbox_A or InputKey.PS_Cross or InputKey.Switch_A => Action.Confirm,
-            InputKey.Key_Backspace or InputKey.Xbox_B or InputKey.PS_Circle or InputKey.Switch_B => Action.Cancel,
+                InputKey.Key_D or InputKey.Key_RightArrow or
+                InputKey.Xbox_DPadRight or InputKey.Xbox_LS_Right or
+                InputKey.PS_DPadRight or InputKey.PS_LS_Right or
+                InputKey.Switch_DPadRight or InputKey.Switch_LS_Right => Action.MoveRight,
 
-            _ => Action.None
-        };
+                InputKey.Key_Space => Action.Jump,
+                InputKey.Key_F => Action.Attack,
+                InputKey.Key_E => Action.Interact,
+                InputKey.Key_R => Action.Reload,
+                InputKey.Key_C => Action.Crouch,
+                InputKey.Key_LeftShift or InputKey.Xbox_LB or InputKey.PS_L1 or InputKey.Switch_L => Action.Sprint,
+                InputKey.Key_LeftCtrl or InputKey.Xbox_RB or InputKey.PS_R1 or InputKey.Switch_R => Action.Dash,
+                InputKey.Key_Q or InputKey.Xbox_Y or InputKey.PS_Triangle or InputKey.Switch_Y => Action.Use,
+                InputKey.Key_Escape or InputKey.Xbox_Back or InputKey.PS_Share or InputKey.Switch_Minus => Action.OpenMenu,
+                InputKey.Key_P or InputKey.Xbox_Start or InputKey.PS_Options or InputKey.Switch_Plus => Action.Pause,
+                InputKey.Key_Enter or InputKey.Xbox_A or InputKey.PS_Cross or InputKey.Switch_A => Action.Confirm,
+                InputKey.Key_Backspace or InputKey.Xbox_B or InputKey.PS_Circle or InputKey.Switch_B => Action.Cancel,
+
+                _ => Action.None
+            };
+        } return result;
     }
 }
 
-public enum Action {
-    None,
-    MoveUp,
-    MoveDown,
-    MoveLeft,
-    MoveRight,
-    Jump,
-    Attack,
-    Interact,
-    Reload,
-    Crouch,
-    Sprint,
-    Dash,
-    Use,
-    OpenMenu,
-    Pause,
-    Confirm,
-    Cancel
+[Flags]
+public enum Flag : Int32 {
+    None = 0,
+    Static = 1 << 0,
+    Dynamic = 1 << 1,
+    Interactable = 1 << 2,
+    Animated = 1 << 3,
+    HasCollision = 1 << 4,
+    Destructible = 1 << 5,
+    Pickable = 1 << 6,
+    Visible = 1 << 7,
+
+    Limit = 1 << 31
+}
+
+[Flags]
+public enum Action : Int32 {
+    None = 0,
+    MoveUp = 1 << 0,
+    MoveDown = 1 << 1,
+    MoveLeft = 1 << 2,
+    MoveRight = 1 << 3,
+    Jump = 1 << 4,
+    Attack = 1 << 5,
+    Interact = 1 << 6,
+    Reload = 1 << 7,
+    Crouch = 1 << 8,
+    Sprint = 1 << 9,
+    Dash = 1 << 10,
+    Use = 1 << 11,
+    OpenMenu = 1 << 12,
+    Pause = 1 << 13,
+    Confirm = 1 << 14,
+    Cancel = 1 << 15,
+
+    Limit = 1 << 31
 }
 
 public enum InputKey {
@@ -400,13 +426,13 @@ public abstract class Entity {
     protected Entity(string name) => Name = name;
 }
 
-public class Player : Entity {
+public class Player : Entity { // certainement useless, deleter
     private Player(string name) : base(name) { }
 
     public static Player Create(string name) => new Player(name);
 }
 
-class EntityStore {
+class EntityStore { // faudra eventuellement voir si ca a rapport avec les flags...
     private readonly List<Entity> _store;
 
     public IReadOnlyList<Entity> Store => _store.ToList();
@@ -449,27 +475,20 @@ class PositionService {
     public Double GetY(Entity entity) { _positionById.TryGetValue(entity.Id, out var value); return value.Y; }
     public (Double X, Double Y) GetPosition(Entity entity) => (GetX(entity), GetY(entity));
 
-    public void MoveInternal(Entity entity, Double dX, Double dY) {
-        if (_positionById.TryGetValue(entity.Id, out var position))
-            _positionById[entity.Id] = position.WithXY((position.X + dX), (position.Y + dY));
-    } // deleter car ca sert plus a rien
-
     public void Move(Entity entity, Double dX, Double dY) {
         if (!_positionById.TryGetValue(entity.Id, out var position)) return;
         var nextPos = position.WithXY(position.X + dX, position.Y + dY);
         bool canMove = RequestMove?.Invoke(entity, nextPos) ?? true;
         if (canMove) {
-            _positionById[entity.Id] = nextPos;OnMoved?.Invoke(entity, nextPos);
+            _positionById[entity.Id] = nextPos; OnMoved?.Invoke(entity, nextPos);
         }
     }
 
-    public void Teleport(Entity entity, Double X, Double Y) {
+    public void Teleport(Entity entity, Double X, Double Y) { // ajouter support collisions
         if (_positionById.TryGetValue(entity.Id, out var position))
             _positionById[entity.Id] = position.WithXY(X, Y);
         OnTeleported?.Invoke(entity, Vector2.Create(_positionById[entity.Id].X, _positionById[entity.Id].Y));
     }
-
-    //possiblement recevoir le event du collider et décider si l'objet bouge ou il reste au meme endroit
 }
 
 interface IHealth {
@@ -662,6 +681,9 @@ class Keyboard : InputDevice {
 
         if (e.type == SDL_EventType.SDL_KEYDOWN) TriggerInput(mapped);
         else TriggerInput(mapped);
+
+        // utiliser const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL); pour les inputs
+        // permet de recup toutes les entrées du clavier et de sortir la logique de la gameloop
     }
 }
 
@@ -706,42 +728,80 @@ class InputManager {
     }
 
     public void MockMovePlayer(Entity entity, Action action) {
-        switch (action) { // Juste pour tester
-            case Action.MoveUp:
-                _positionService.Move(entity, 0, -10);
-                break;
-            case Action.MoveLeft:
-                _positionService.Move(entity, -10, 0);
-                break;
-            case Action.MoveDown:
-                _positionService.Move(entity, 0, 10);
-                break;
-            case Action.MoveRight:
-                _positionService.Move(entity, 10, 0);
-                break;
-            case Action.Use:
-                Console.WriteLine($"{entity.Name} is using something mysterious...");
-                break;
+        int dx = 0; int dy = 0;
 
-            default:
-                //Console.WriteLine("Unmapped key!");
-                break;
-        }
+        if ((action & Action.MoveUp) != 0) dy -= 10;
+        if ((action & Action.MoveDown) != 0) dy += 10;
+        if ((action & Action.MoveLeft) != 0) dx -= 10;
+        if ((action & Action.MoveRight) != 0) dx += 10;
+
+        if (dx != 0 || dy != 0)
+            _positionService.Move(entity, dx, dy);
+
     }
+
+
+
+    //    switch (action) { // Juste pour tester
+    //case Action.MoveUp:
+    //    _positionService.Move(entity, 0, -10);
+    //    break;
+    //case Action.MoveLeft:
+    //    _positionService.Move(entity, -10, 0);
+    //    break;
+    //case Action.MoveDown:
+    //    _positionService.Move(entity, 0, 10);
+    //    break;
+    //case Action.MoveRight:
+    //    _positionService.Move(entity, 10, 0);
+    //    break;
+    //case Action.Use:
+    //    Console.WriteLine($"{entity.Name} is using something mysterious...");
+    //    break;
+
+    //default:
+    //    //Console.WriteLine("Unmapped key!");
+    //    break;
+
+}
+
+class FlagService {
+    private readonly Dictionary<Guid, Flag> _flagsById;
+
+    public FlagService() => _flagsById = new Dictionary<Guid, Flag>();
+
+    public void Assign(Entity entity, Flag flags) => _flagsById[entity.Id] = flags;
+
+    public bool isFlaged() { return true; }
+
+    public bool HasFlag(Entity entity, Flag flags) => (_flagsById[entity.Id] & flags) == flags;
+
+    // servira quand on automatisera l'assignation des comportement, voir main() 
+    // pourra aussi servir si on veux simplifier l'assignation de certains trucs
 }
 
 class ActionService {
-    private readonly Dictionary<Guid, List<Action>> _actionsById;
+    private readonly Dictionary<Guid, Action> _actionsById;
 
-    public ActionService() => _actionsById = new Dictionary<Guid, List<Action>>();
+    public ActionService() => _actionsById = new Dictionary<Guid, Action>();
 
-    public void Register(Entity entity, List<Action> actions) => _actionsById[entity.Id] = actions;
+    public void Assign(Entity entity, Action actions) => _actionsById[entity.Id] = actions;
 
-    public bool CanPerform(Entity entity, Action action) => _actionsById.ContainsKey(entity.Id) && _actionsById[entity.Id].Contains(action);
-
+    public bool CanPerform(Entity entity, Action actions) => (_actionsById[entity.Id] & actions) != 0;
 }
 
-class ActionDispatcher { // remplacer les events pour une request comme dans collision
+//class ActionServices {
+//    private readonly Dictionary<Guid, List<Action>> _actionsById;
+
+//    public ActionService() => _actionsById = new Dictionary<Guid, List<Action>>();
+
+//    public void Register(Entity entity, List<Action> actions) => _actionsById[entity.Id] = actions;
+
+//    public bool CanPerform(Entity entity, Action action) => _actionsById.ContainsKey(entity.Id) && _actionsById[entity.Id].Contains(action);
+
+//}
+
+class ActionDispatcher {
     public event Action<Entity, Action> EntityActionRequested;
     public event Action<Entity, Action> EntityActionRejected;
     private readonly ActionService _actionService;
@@ -751,6 +811,9 @@ class ActionDispatcher { // remplacer les events pour une request comme dans col
         inputService.EntityInputRequested += MapInput;
         _actionService = actionService;
     }
+
+    // Possiblement linker avec les flags pour simplifier la chose
+    // et ajouter de l'abstraction, genre Flag.Movable = move.right...
 
     // je pense que d'utiliser une nouvelel disposition genre
     // je pense que d'utiliser une nouvelel disposition genre
@@ -763,16 +826,20 @@ class ActionDispatcher { // remplacer les events pour une request comme dans col
     
     // public void SetKeyMap() ou whatever...
 
-    public bool GetInputMappingState() => _isMappingEnabled;
+    public bool GetInputMappingState() => _isMappingEnabled; // retirer "Input" du nom...
     public void ToggleInputMapping() => _isMappingEnabled = !_isMappingEnabled;
     public void EnableInputMapping() => _isMappingEnabled = true;
     public void DisableInputMapping() => _isMappingEnabled = false;
 
     public void MapInput(Entity entity, InputKey input) {
-        var action = ActionMapper.FromInput(input);
+        // supporte les entrées multiples mais InputKey venant de SDL
+        // n'est pas encore multiple. Utiliser le truc comme dit dans class Keyboard
+        IEnumerable<InputKey> TEMPORAIRE = new[] { input };
+        var action = ActionMapper.FromInput(TEMPORAIRE);
+        //Console.WriteLine(action);
         if (_actionService.CanPerform(entity, action) && _isMappingEnabled) ResolveMapping(entity, action);
         else { // faire un event OnNotAllowed
-            EntityActionRequested?.Invoke(entity, action); // prob faire 2 fnc qui resolve en event
+            EntityActionRejected?.Invoke(entity, action); // prob faire 2 fnc qui resolve en event
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"{entity.Name} is not allowed to perform '{action}'");
             Console.ResetColor();
@@ -1061,21 +1128,17 @@ class RenderService {
 }
 
 class Program {
+    // Ultimement, faire un system de enum qui assigne des types de responsabilités et ca les assigne
+    // automatiquement au service relié au type de l'enum, un peu comme le InputDispatcher
+
+    // Genre si je fais entity.addflag(flag.collidable) -> collideservice.add(entity)... = voir...
+    // flags permettent de differencier un entité dynamique d'un entité statique comme un mur 
     static void Main(string[] args) {
         // TODO: faire un GameService/Manager qui contient un instance du EntityStore et qui injecte...
 
-        List<Action> playerActions = new List<Action> {
-            Action.MoveUp,
-            Action.MoveDown,
-            Action.MoveLeft,
-            Action.MoveRight,
-            Action.Jump,
-            Action.Attack,
-            Action.Dash,
-            Action.OpenMenu,
-            Action.Cancel,
-            Action.Use
-        };
+        Action playerActions = Action.MoveUp | Action.MoveDown | Action.MoveLeft |
+                               Action.MoveRight | Action.Jump | Action.Attack |
+                               Action.Dash | Action.OpenMenu | Action.Cancel | Action.Use;
 
         var globalStore = new EntityStore();
 
@@ -1094,6 +1157,8 @@ class Program {
         var actionDispatcher = new ActionDispatcher(inputService, actionService);
 
         var InputManager = new InputManager(globalStore, inputService, positionService, actionDispatcher);
+
+        var flagService = new FlagService();
 
         var manager = new ConversationManager();
 
@@ -1144,6 +1209,13 @@ class Program {
         Entity player4 = Player.Create("Delta");
         Entity player5 = Player.Create("Echo");
 
+        flagService.Assign(player2, Flag.Animated | Flag.Dynamic | Flag.Interactable);
+
+        if (flagService.HasFlag(player2, Flag.Dynamic)) {
+            Console.WriteLine("Has flag");
+        }
+        
+
         /* onInput event, apelle la inputService.ProcessInput() */
 
         globalStore.Register(player1);
@@ -1174,8 +1246,8 @@ class Program {
         //controller1.ReadInput();
         //keyboard1.ReadInput();
 
-        actionService.Register(player2, playerActions);
-        actionService.Register(player3, playerActions);
+        actionService.Assign(player2, playerActions);
+        actionService.Assign(player3, playerActions);
 
         //Console.WriteLine(actionService.CanPerform(player1, Actions.OpenMenu));
 
@@ -1294,8 +1366,11 @@ class Program {
                     if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) {
                         actionDispatcher.DisableInputMapping(); menu = !menu;
                     } keyboard1.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
-                                             // readInput(entity) -> aller voir dans la classe pour notes...
-                                             // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
+                                              // readInput(entity) -> aller voir dans la classe pour notes...
+                                              // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
+
+                    // utiliser const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL); pour les inputs
+                    // permet de recup toutes les entrées du clavier et de sortir la logique de la gameloop
                 }
             }
 
