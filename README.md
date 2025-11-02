@@ -1,3 +1,88 @@
+<div align="center">
+
+<h1>Quark</h1>
+<h3><em>A Simple, Event-Driven C# Game Engine</em></h3>
+
+<p>
+  <a href="https://docs.microsoft.com/en-us/dotnet/csharp/">
+    <img src="https://img.shields.io/badge/C%23-11.0-239120?style=flat-square&logo=c-sharp&logoColor=white" alt="C#">
+  </a>
+  <a href="https://dotnet.microsoft.com/">
+    <img src="https://img.shields.io/badge/.NET-8.0-512BD4?style=flat-square&logo=dotnet&logoColor=white" alt=".NET">
+  </a>
+  <a href="https://www.libsdl.org/">
+    <img src="https://img.shields.io/badge/SDL2-Enabled-00599C?style=flat-square&logo=steam&logoColor=white" alt="SDL2">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Custom-orange?style=flat-square" alt="License">
+  </a>
+  <a href="https://github.com/unrays/Quark">
+    <img src="https://img.shields.io/badge/Status-Active%20Development-success?style=flat-square" alt="Status">
+  </a>
+</p>
+
+<p>
+<em>Built with service-driven architecture principles • Started October 26, 2025</em>
+</p>
+
+<p>
+  <a href="#-features">Features</a> • 
+  <a href="#-getting-started">Getting Started</a> • 
+  <a href="#-architecture">Architecture</a> • 
+  <a href="#-showcase">Showcase</a> • 
+  <a href="#-documentation">Documentation</a>
+</p>
+
+</div>
+
+---
+
+## About
+
+<p>
+Event-driven C# engine for managing game entities, positions, health, and interactions.<br>
+The project development commenced on Sunday, October 26, 2025.
+</p>
+
+<p>
+Welcome to my new attempt at <em>"I'm creating problems for myself because I already have too much work to do"</em>. So, here you see the result of 2 days (when I first committed to the repo) of research and personal realignment on the fundamental notions of design and software architecture because I happened to drift a little from my best practices lately. As a result, I re-taught myself about ten hours of personal training on the different architectures and solid principles and I think I trained properly in order to be able to continue on a good basis.
+</p>
+
+<p>
+The project that I present to you today is simply a kind of game engine that I built around a new type of architecture that I discovered called <strong>service driven architecture</strong> and which, as its name suggests, consists of orchestrating its systems into different services. I've actually completely fallen in love with this concept and I think it's going to replace my ECS obsession for a few weeks while the traumatic ECS C++ flashbacks fade from my mind.
+</p>
+
+<p>
+As for this game engine, since this is the 4th time I've tried to talk about it, I'll try to be straight forward. So basically, I started this project this morning on a whim where I had the idea of applying the different notions learned this weekend and I liked the concept of game engine so it was natural that I go there. In fact, it was a few times that I tried to do something similar but each time, I always arrived at the same point where my architecture seemed too rigid and complex for me to scale up and make a real engine of my code.
+</p>
+
+<p>
+Finally, this new approach pushed me to create something much more <strong>SOLID and modular</strong>, which allowed me for the first time in my career to experiment with Event and trigger systems, which allowed me to create something much bigger and which makes me much more proud, a <strong>Collision System</strong>. Okay, I know it might not be the most impressive thing, but you can see that this is my first working collision system ever. In fact, I've never managed to get to this stage, and now that I've done it, I'm looking at new goals to push my skills even further.
+</p>
+
+<p>
+The architecture you see here is pretty much all done by me only, with the help of documentation of course but it's still 100% out of my head and my brain, and I'm quite proud of it. I made it in 4 hours non-stop almost of programming and I finished this evening, thus pushing my project on github for personal documentation purposes and to showcase my new seasonal and probably very fleeting obsessions.
+</p>
+
+<p>
+If you've read my message so far, I'd like to ask you first of all what you're actually doing reading 800-word messages from a random guy on GitHub and also, I sincerely thank you for your attention, I hope you enjoyed this little bit of my daily life, I invite you to stay tuned in case I re-re-release another ECS in the coming weeks. On that note, sincerely have a very nice end of the day.
+</p>
+
+<p>
+Some of the information above is slightly incorrect because I ultimately reworked the project, so no, I didn't do all of that in just 4 hours :)
+</p>
+
+---
+
+## Latest Progress
+<img width="1602" height="932" alt="image" src="https://github.com/user-attachments/assets/7dadb0b1-5fcf-4b6b-8b20-16ce79a840cc" />
+Rendering of multiple entities, each with its own texture and functional hitbox. Each entity has its own dedicated controller, its own set of actions it is authorized to perform, its own updates, and its own modules. This could allow me, in the future, to, for example, give a controller to an AI and let it press the buttons it wants without actually interacting with the entity. Also, we could create a character swap system where I simply reassign the controller to another entity, for instance.
+
+---
+
+## Full Code
+
+```csharp
 // Copyright (c) October 2025 Félix-Olivier Dumas. All rights reserved.
 // Licensed under the terms described in the LICENSE file
 
@@ -586,9 +671,9 @@ class BasicPhysic : IPhysic {
 
 }
 
-// move (bouge pas encore) -> PhysicSystem (est-ce que je peux bouger?) -> checkCollision (oui/non).....
+// move (bouge pas encore) -> PhysicSystem (est-ce que je peux bouger?) -> checkCollision (oui/non) ->
 
-class PhysicsSystem { // un peu useless pour l'instant, à revoir sinon DELETE
+class PhysicsSystem {
     private readonly Dictionary<Guid, IPhysic> _physicById;
     private readonly PositionService _positionService;
     private readonly CollisionManager _collisionManager;
@@ -620,7 +705,7 @@ class PhysicsSystem { // un peu useless pour l'instant, à revoir sinon DELETE
 
 }
 
-public class ConversationManager { //wtf c encore là, une feature?
+public class ConversationManager {
     public event Action<Entity, Entity, string> OnConversationStarted;
 
     public void StartConversation(Entity a, Entity b, string message) {
@@ -741,7 +826,7 @@ class ActionService {
 
 }
 
-class ActionDispatcher { // remplacer les events pour une request comme dans collision
+class ActionDispatcher {
     public event Action<Entity, Action> EntityActionRequested;
     public event Action<Entity, Action> EntityActionRejected;
     private readonly ActionService _actionService;
@@ -1378,3 +1463,77 @@ class Program {
 
     }
 }
+```
+
+## Output
+```console
+[Input] Device 'Undefined Controller' triggered 'Start'
+[Input] Alpha pressed Start
+[Input] Device 'Undefined Controller' triggered 'Start'
+[Input] Alpha pressed Start
+[Input] Device 'Undefined Keyboard' triggered 'Alt'
+[Input] Bravo pressed Alt
+[Input] Device 'Undefined Keyboard' triggered 'Alt'
+[Input] Bravo pressed Alt
+[Dialogue] Alpha ␦ Bravo: "d"
+[Health] Alpha took 75 damage | HP: 25/100
+[Health] Alpha healed by 25 | HP: 50/100
+[Health] Alpha took 10 damage | HP: 40/100
+[Health] Bravo took 50 damage | HP: 50/100
+[Health] Bravo healed by 10 | HP: 60/100
+[Health] Charlie took 60 damage | HP: 40/100
+[Movement] Alpha moved to (10, 0)
+[Collision] Bravo collided with Charlie
+[Movement] Bravo moved to (0, 0)
+[Movement] Alpha teleported to (10, 10)
+┌─────────┬─────────┬────────────┐
+│ Entity  │ Health  │ Position   │
+├─────────┼─────────┼────────────┤
+│ Alpha   │ 40/100  │ (10, 10)   │
+├─────────┼─────────┼────────────┤
+│ Bravo   │ 60/100  │ (0, 0)     │
+├─────────┼─────────┼────────────┤
+│ Charlie │ 40/100  │ (0, 0)     │
+├─────────┼─────────┼────────────┤
+│ Delta   │ Invalid │ (NaN, NaN) │
+├─────────┼─────────┼────────────┤
+│ Echo    │ Invalid │ (NaN, NaN) │
+└─────────┴─────────┴────────────┘
+[Sprite Registered] Bravo      | Texture ptr: 1752388786344 | Hitbox: 64x64
+[Sprite Registered] Alpha      | Texture ptr: 1752388777552 | Hitbox: 64x64
+[Sprite Registered] Charlie    | Texture ptr: 1752388768584 | Hitbox: 64x64
+[Sprite Registered] Delta      | Texture ptr: 1752388784912 | Hitbox: 64x64
+```
+
+## Entity Input Handling with Collision Support
+```console
+[Input] Bravo pressed Key_A
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Movement] Bravo moved to (30, 10)
+[Input] Bravo executed MoveLeft
+[Input] Bravo pressed Key_A
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Movement] Bravo moved to (20, 10)
+[Input] Bravo executed MoveLeft
+[Input] Bravo pressed Key_A
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Collision] Bravo collided with Alpha
+[Movement] Bravo moved to (10, 10)
+[Input] Bravo executed MoveLeft
+[Input] Bravo pressed Key_A
+[Input] Device 'unknown_keyboard_0' triggered 'Key_A'
+[Movement] Bravo moved to (0, 10)
+[Input] Bravo executed MoveLeft
+[Input] Bravo pressed Key_A
+[Input] Device 'unknown_keyboard_0' triggered 'Key_D'
+[Collision] Bravo collided with Alpha
+[Movement] Bravo moved to (10, 10)
+[Input] Bravo executed MoveRight
+[Input] Bravo pressed Key_D
+[Input] Device 'unknown_keyboard_0' triggered 'Key_T'
+Bravo is not allowed to perform 'None'
+[Input] Bravo pressed Key_T
+[Input] Device 'unknown_keyboard_0' triggered 'Key_E'
+Bravo is not allowed to perform 'Interact'
+[Input] Bravo pressed Key_E
+```
