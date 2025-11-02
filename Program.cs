@@ -586,9 +586,9 @@ class BasicPhysic : IPhysic {
 
 }
 
-// move (bouge pas encore) -> PhysicSystem (est-ce que je peux bouger?) -> checkCollision (oui/non) ->
+// move (bouge pas encore) -> PhysicSystem (est-ce que je peux bouger?) -> checkCollision (oui/non).....
 
-class PhysicsSystem {
+class PhysicsSystem { // un peu useless pour l'instant, à revoir sinon DELETE
     private readonly Dictionary<Guid, IPhysic> _physicById;
     private readonly PositionService _positionService;
     private readonly CollisionManager _collisionManager;
@@ -620,7 +620,7 @@ class PhysicsSystem {
 
 }
 
-public class ConversationManager {
+public class ConversationManager { //wtf c encore là, une feature?
     public event Action<Entity, Entity, string> OnConversationStarted;
 
     public void StartConversation(Entity a, Entity b, string message) {
@@ -741,7 +741,7 @@ class ActionService {
 
 }
 
-class ActionDispatcher {
+class ActionDispatcher { // remplacer les events pour une request comme dans collision
     public event Action<Entity, Action> EntityActionRequested;
     public event Action<Entity, Action> EntityActionRejected;
     private readonly ActionService _actionService;
