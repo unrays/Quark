@@ -828,6 +828,7 @@ class ActionService {
 
 class ActionDispatcher {
     public event Action<Entity, Action> EntityActionRequested;
+    public event Action<Entity, Action> EntityActionRejected;
     private readonly ActionService _actionService;
     private bool _isMappingEnabled;
 
@@ -855,7 +856,8 @@ class ActionDispatcher {
     public void MapInput(Entity entity, InputKey input) {
         var action = ActionMapper.FromInput(input);
         if (_actionService.CanPerform(entity, action) && _isMappingEnabled) ResolveMapping(entity, action);
-        else {
+        else { // faire un event OnNotAllowed
+            EntityActionRequested?.Invoke(entity, action); // prob faire 2 fnc qui resolve en event
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"{entity.Name} is not allowed to perform '{action}'");
             Console.ResetColor();
@@ -1376,7 +1378,7 @@ class Program {
                 if (e.type == SDL_EventType.SDL_KEYDOWN) {
                     if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) {
                         actionDispatcher.DisableInputMapping(); menu = !menu;
-                    } keyboard2.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
+                    } keyboard1.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
                                              // readInput(entity) -> aller voir dans la classe pour notes...
                                              // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
                 }
