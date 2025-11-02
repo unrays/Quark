@@ -21,6 +21,7 @@ using Windows.Perception.Spatial;
 using Windows.UI.Xaml.Controls;
 using static SDL2.SDL;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Uno.CompositionConfiguration;
 
 public static class InputKeyAdapterSDL {
@@ -648,51 +649,65 @@ public class ConversationManager { //wtf c encore là, une feature?
 }
 
 abstract class InputDevice {
-    public static event Action<InputDevice, InputKey> GlobalInput;
+    public static event Action<InputDevice, IEnumerable<InputKey>> GlobalInput;
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Name { get; set; }
     
 
     protected InputDevice(string name = "unknown_input_device") => Name = name;
 
-    protected void TriggerInput(InputKey key) => GlobalInput?.Invoke(this, key);
+    protected void TriggerInput(List<InputKey> keys) => GlobalInput?.Invoke(this, keys);
 
-    public abstract void ReadInput(SDL_Event e);
+    public abstract void ReadInput(); // ? à voir, useless...
 }
 
 class Controller : InputDevice {
     public Controller(string name = "unknown_controller") : base(name) { }
-    public override void ReadInput(SDL_Event e) { // le controller et le keyboard sont presque identiques...
-        if (e.type == SDL_EventType.SDL_KEYDOWN || e.type == SDL_EventType.SDL_KEYUP) { }
-        SDL_GameControllerButton button = (SDL_GameControllerButton)e.cbutton.button;
-        InputKey mapped = InputKeyAdapterSDL.FromControllerButton(button);
+    public override void ReadInput() { // le controller et le keyboard sont presque identiques...
+        //if (e.type == SDL_EventType.SDL_KEYDOWN || e.type == SDL_EventType.SDL_KEYUP) { }
+        //SDL_GameControllerButton button = (SDL_GameControllerButton)e.cbutton.button;
+        //InputKey mapped = InputKeyAdapterSDL.FromControllerButton(button);
 
-        if (e.type == SDL_EventType.SDL_KEYDOWN) TriggerInput(mapped);
-        else TriggerInput(mapped);
+        //if (e.type == SDL_EventType.SDL_KEYDOWN) TriggerInput(mapped);
+        //else TriggerInput(mapped);
+
+        Console.WriteLine("À implémenter, faut faire le meme truc que keyboard");
     }
 }
 
 class Keyboard : InputDevice {
     public Keyboard(string name = "unknown_keyboard") : base(name) { }
-    public override void ReadInput(SDL_Event e) {
-        if (e.type == SDL_EventType.SDL_KEYDOWN || e.type == SDL_EventType.SDL_KEYUP) { }
-        SDL_Keycode keyCode = e.key.keysym.sym;
-        InputKey mapped = InputKeyAdapterSDL.FromSDLKey(keyCode);
+    public override void ReadInput() {
+        var inputKeys = new List<InputKey>();
 
-        if (e.type == SDL_EventType.SDL_KEYDOWN) TriggerInput(mapped);
-        else TriggerInput(mapped);
+        int numKeys;
+        IntPtr keyStatePtr = SDL.SDL_GetKeyboardState(out numKeys);
 
-        // utiliser const Uint8* currentKeyStates = SDL_GetKeyboardState(NULL); pour les inputs
-        // permet de recup toutes les entrées du clavier et de sortir la logique de la gameloop
+        byte[] keyStates = new byte[numKeys];
+        Marshal.Copy(keyStatePtr, keyStates, 0, numKeys);
+
+        for (int i = 0; i < numKeys; i++) {
+            if (keyStates[i] != 0) {
+                SDL.SDL_Keycode key = SDL.SDL_GetKeyFromScancode((SDL.SDL_Scancode)i);
+                inputKeys.Add(InputKeyAdapterSDL.FromSDLKey(key));
+            }
+        }
+
+        if (inputKeys.Count > 0) TriggerInput(inputKeys);
+
+
     }
 }
 
 class InputService {
-    public event Action<Entity, InputKey> EntityInputRequested;
+    public event Action<Entity, IEnumerable<InputKey>> EntityInputRequested;
     private readonly Dictionary<Guid, InputDevice> _deviceById;
     private readonly EntityStore _entityStore;
 
-    public InputService(EntityStore entityStore) => (_entityStore, _deviceById) = (entityStore, new Dictionary<Guid, InputDevice>());
+    public InputService(EntityStore entityStore) {
+        (_entityStore, _deviceById) = (entityStore, new Dictionary<Guid, InputDevice>());
+        InputDevice.GlobalInput += ProcessInput;
+    }
 
     public void BindInputDevice(InputDevice inputDevice, Entity entity) {
         _deviceById[entity.Id] = inputDevice; Int32 occurrences = 0;
@@ -707,14 +722,14 @@ class InputService {
     // onRemove -> renommer les contro
     // leurs keyboard_2 -> keyboard_1
 
-    public void ProcessInput(InputDevice inputDevice, InputKey inputKey) {
+    public void ProcessInput(InputDevice inputDevice, IEnumerable<InputKey> inputKeys) {
         foreach (var storedEntity in _entityStore.Store) {
             if (_deviceById.TryGetValue(storedEntity.Id, out var device) && device == inputDevice)
-                ResolveInput(storedEntity, inputKey);
+                ResolveInput(storedEntity, inputKeys);
         }
     }
 
-    public void ResolveInput(Entity entity, InputKey inputKey) => EntityInputRequested?.Invoke(entity, inputKey);
+    public void ResolveInput(Entity entity, IEnumerable<InputKey> inputKeys) => EntityInputRequested?.Invoke(entity, inputKeys);
 }
 
 class InputManager {
@@ -831,11 +846,10 @@ class ActionDispatcher {
     public void EnableInputMapping() => _isMappingEnabled = true;
     public void DisableInputMapping() => _isMappingEnabled = false;
 
-    public void MapInput(Entity entity, InputKey input) {
+    public void MapInput(Entity entity, IEnumerable<InputKey> inputKeys) {
         // supporte les entrées multiples mais InputKey venant de SDL
         // n'est pas encore multiple. Utiliser le truc comme dit dans class Keyboard
-        IEnumerable<InputKey> TEMPORAIRE = new[] { input };
-        var action = ActionMapper.FromInput(TEMPORAIRE);
+        var action = ActionMapper.FromInput(inputKeys);
         //Console.WriteLine(action);
         if (_actionService.CanPerform(entity, action) && _isMappingEnabled) ResolveMapping(entity, action);
         else { // faire un event OnNotAllowed
@@ -1057,7 +1071,7 @@ class EntitySpriteManager { // ou SpriteManager, à revoir...
             hb.Y = (int)position.Y;
         }
 
-        Console.WriteLine($"{tex.X} {tex.Y} | {hb.X} {hb.Y}");
+        //Console.WriteLine($"{tex.X} {tex.Y} | {hb.X} {hb.Y}");
     }
 }
 
@@ -1191,8 +1205,8 @@ class Program {
             Console.ResetColor();
         };
 
-        inputService.EntityInputRequested += (entity, key) => {
-            Console.WriteLine($"[Input] {entity.Name} pressed {key.ToString()}");
+        inputService.EntityInputRequested += (entity, keys) => {
+            foreach (var k in keys) Console.WriteLine($"[Input] {entity.Name} pressed {k.ToString()}");
         };
 
         actionDispatcher.EntityActionRequested += (entity, action) => {
@@ -1228,11 +1242,15 @@ class Program {
         InputDevice keyboard1 = new Keyboard();
         InputDevice keyboard2 = new Keyboard();
 
-        InputDevice.GlobalInput += (inputDevice, key) => {
+        InputDevice.GlobalInput += (inputDevice, keys) => {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"[Input] Device '{inputDevice.Name}' triggered '{key.ToString()}'");
+            foreach (var k in keys) {
+                Console.WriteLine($"[Input] Device '{inputDevice.Name}' triggered '{k.ToString()}'");
+                //inputService.ProcessInput(inputDevice, k); // dude wtf, regler ca au plus vite
+            }
+                
             Console.ResetColor();
-            inputService.ProcessInput(inputDevice, key);
+            
         };
 
         inputService.BindInputDevice(controller1, player1);
@@ -1365,7 +1383,8 @@ class Program {
                 if (e.type == SDL_EventType.SDL_KEYDOWN) {
                     if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) {
                         actionDispatcher.DisableInputMapping(); menu = !menu;
-                    } keyboard1.ReadInput(e); // mettre dans le render service avec la liste de inputservice++
+                    } keyboard1.ReadInput();
+                    // mettre dans le render service avec la liste de inputservice++
                                               // readInput(entity) -> aller voir dans la classe pour notes...
                                               // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
 
