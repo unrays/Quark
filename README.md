@@ -91,10 +91,13 @@ using ImGuiGeneral;
 using ImGuiNET;
 using SDL2;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Drawing;
+using System.Linq;
 using System.Numerics;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
@@ -629,7 +632,7 @@ class CollisionManager {
     private readonly HitboxService _hitboxService;
     private readonly EntityStore _entityStore;
 
-    private const double EPSILON = -3;
+    private const double EPSILON = 0;
 
     public CollisionManager(EntityStore entityStore, PositionService positionService, HitboxService hitboxService) {
         (_entityStore, _positionService, _hitboxService) = (entityStore, positionService, hitboxService);
@@ -737,13 +740,16 @@ abstract class InputDevice {
     public static event Action<InputDevice, IEnumerable<InputKey>> GlobalInput;
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Name { get; set; }
-    
+
+
+    protected static int counter = 0;
+    protected HashSet<InputKey> inputBuffer = new HashSet<InputKey>();
 
     protected InputDevice(string name = "unknown_input_device") => Name = name;
 
     protected void TriggerInput(List<InputKey> keys) => GlobalInput?.Invoke(this, keys);
 
-    public abstract void ReadInput(); // ? à voir, useless...
+    public abstract void ReadInput();
 }
 
 class Controller : InputDevice {
@@ -765,22 +771,37 @@ class Keyboard : InputDevice {
     public override void ReadInput() {
         var inputKeys = new List<InputKey>();
 
+        // Genre faire un buffer qui enregistre les touches
+        // appuyés et check a chaque frame si elles sont des doublons 
+        // ou si il a relaché. En fait, aller voir en ligne.
+
         int numKeys;
         IntPtr keyStatePtr = SDL.SDL_GetKeyboardState(out numKeys);
 
         byte[] keyStates = new byte[numKeys];
         Marshal.Copy(keyStatePtr, keyStates, 0, numKeys);
 
+        if (keyStates[(int)SDL.SDL_Scancode.SDL_SCANCODE_UP] == 1)
+            Console.WriteLine("UP pressed");
+        if (keyStates[(int)SDL.SDL_Scancode.SDL_SCANCODE_LEFT] == 1)
+            Console.WriteLine("LEFT pressed");
+
+
         for (int i = 0; i < numKeys; i++) {
             if (keyStates[i] != 0) {
                 SDL.SDL_Keycode key = SDL.SDL_GetKeyFromScancode((SDL.SDL_Scancode)i);
                 inputKeys.Add(InputKeyAdapterSDL.FromSDLKey(key));
+
+                //inputBuffer.Add(InputKeyAdapterSDL.FromSDLKey(key));
+
             }
         }
 
-        if (inputKeys.Count > 0) TriggerInput(inputKeys);
+        Console.WriteLine(counter++);  
+        
+        // recommencer le truc de buffer
 
-
+        if (inputKeys.Count > 0)  TriggerInput(inputKeys);
     }
 }
 
@@ -830,10 +851,11 @@ class InputManager {
     public void MockMovePlayer(Entity entity, Action action) {
         int dx = 0; int dy = 0;
 
-        if ((action & Action.MoveUp) != 0) dy -= 10;
-        if ((action & Action.MoveDown) != 0) dy += 10;
-        if ((action & Action.MoveLeft) != 0) dx -= 10;
-        if ((action & Action.MoveRight) != 0) dx += 10;
+        if ((action & Action.MoveUp) != 0) dy -= 1;
+        if ((action & Action.MoveDown) != 0) dy += 1;
+        if ((action & Action.MoveLeft) != 0) dx -= 1;
+        if ((action & Action.MoveRight) != 0) dx += 1;
+        if ((action & Action.Jump) != 0) dy -= 3;
 
         if (dx != 0 || dy != 0)
             _positionService.Move(entity, dx, dy);
@@ -1468,7 +1490,7 @@ class Program {
                 if (e.type == SDL_EventType.SDL_KEYDOWN) {
                     if (e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) {
                         actionDispatcher.DisableInputMapping(); menu = !menu;
-                    } keyboard1.ReadInput();
+                    } 
                     // mettre dans le render service avec la liste de inputservice++
                                               // readInput(entity) -> aller voir dans la classe pour notes...
                                               // FAIRE UN CHARACTER SELECTOR QUI RELIÉ A CETTE LOGIQUE
@@ -1477,6 +1499,8 @@ class Program {
                     // permet de recup toutes les entrées du clavier et de sortir la logique de la gameloop
                 }
             }
+
+            keyboard1.ReadInput();
 
             renderSystem.SetRenderColor(Color.Black);
             renderSystem.RenderClear();
